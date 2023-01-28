@@ -1,0 +1,11 @@
+{
+  "name": "lnr-web-template",
+  "version": "1.0.0",
+  "description": "A starting place for building dapps that are 100% on chain",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Derp Herpenstein",
+  "license": "ISC"
+}
