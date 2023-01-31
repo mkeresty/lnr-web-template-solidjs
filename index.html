@@ -6,6 +6,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="lnr-ethers-1.0.0.js"></script>
+  <script src="lnr-web-0.1.0.js"></script>
 
   <script>
     const lnrWebAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"assetHash","type":"bytes32"},{"indexed":false,"internalType":"string","name":"assetName","type":"string"},{"indexed":false,"internalType":"string","name":"assetDescription","type":"string"}],"name":"NewAsset","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"domain","type":"bytes32"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"NewWebsite","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[],"name":"lnrResolverAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"lnrWebsites","outputs":[{"internalType":"bool","name":"derp","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"}],"name":"getWebsite","outputs":[{"components":[{"internalType":"bool","name":"derp","type":"bool"},{"internalType":"string[]","name":"linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"pageTxHashArray","type":"bytes32[]"}],"internalType":"structLNR_WEB_V0.Website","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"string[]","name":"_linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"_pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"_pageTxHashArray","type":"bytes32[]"}],"name":"updateWebsite","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"_assetHash","type":"bytes32[]"},{"internalType":"string[]","name":"_assetName","type":"string[]"},{"internalType":"string[]","name":"_assetType","type":"string[]"},{"internalType":"string[]","name":"_assetDescription","type":"string[]"},{"internalType":"bytes[]","name":"_assetData","type":"bytes[]"},{"internalType":"bool[]","name":"_zip","type":"bool[]"}],"name":"uploadAssets","outputs":[],"stateMutability":"nonpayable","type":"function"}];
@@ -16,6 +17,7 @@
     var htmlMinify = require('html-minifier').minify;
     let provider = new ethers.providers.Web3Provider(window.ethereum);
     let lnr;
+    let lnrWeb;
     let signer;
 
     let og = {
@@ -29,6 +31,7 @@
       await provider.send("eth_requestAccounts", []);
       signer = provider.getSigner();
       lnr = new LNR(ethers, signer);
+      lnrWeb = new LNR_WEB(ethers, provider, signer);
       let wallet = await signer.getAddress();
       lnrWebContract = new ethers.Contract(lnrWebAddress, lnrWebAbi, signer);
       document.getElementById('eth_login_button').innerHTML = "Wallet:" + wallet.substring(0,6) + "..." + wallet.slice(wallet.length-4);
@@ -39,74 +42,18 @@
       document.getElementById('web3Buttons').style.display = "inline-block";
     }
 
-
-    function compressData(uncompressed){
-      let tmpUncompressed = new TextEncoder().encode(uncompressed);
-      return pako.deflate(tmpUncompressed);
-    }
-
-    function decompressData(compressed){
-      let tmpCompressed = ethers.utils.arrayify(compressed);
-      let uncompressed = new TextDecoder().decode(pako.inflate(tmpCompressed));
-      return uncompressed;
-    }
-
-    async function getDataFromChain(tmpTxHash, tmpDataHash){
-      let tx = await provider.getTransaction(tmpTxHash);
-      let input_data = '0x' + tx.data.slice(10);
-      let iface = new ethers.utils.Interface(lnrWebAbi);
-      let decodedData = iface.parseTransaction({ data: tx.data, value: tx.value });
-      let params = decodedData.args;
-      for(let i=0; i< params[0].length; i++){
-        if(params[0][i] === tmpDataHash){
-          let finalData = params[4][i];
-          if(params[5][i]) // if its zipped, unzip it
-            finalData = decompressData(params[4][i]);
-
-          //finalData = decodeURI(finalData); // makes the files larger
-          let computedHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(finalData));
-          if(computedHash === params[0][i])
-            return {
-              hash: params[0][i],
-              name: params[1][i],
-              type: params[2][i],
-              desc: params[3][i],
-              raw : params[4][i],
-              data: finalData,
-              zip: params[5][i]
-            }
-          else{
-            throw "HASH MISMATCH!"
-          }
-        }
-      }
-      throw "Unable to locate asset: derp://" + tmpTxHash + "/" + tmpDataHash;
-    }
-
     async function uploadNewFile(){
       let formData = new FormData(document.getElementById("uploadNewFileForm"));
-      let tmpNewFile = {
-        name: formData.get('fileName'),
-        type: formData.get('fileType'),
-        desc: formData.get('fileDesc'),
-        uncompressedData : formData.get('fileData')
-      }
-      tmpNewFile.compressedData = compressData(tmpNewFile.uncompressedData);
-      tmpNewFile.uncompressedKeccak256 = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(tmpNewFile.uncompressedData));
-      console.log("Upload Asset:");
-      console.log(tmpNewFile);
+      let upload = await lnrWeb.uploadNewFile(formData.get('fileName'),
+                                              formData.get('fileType'),
+                                              formData.get('fileDesc'),
+                                              formData.get('fileData') );
 
-      let upload = await lnrWebContract.uploadAssets( [tmpNewFile.uncompressedKeccak256],
-                                                      [tmpNewFile.name],
-                                                      [tmpNewFile.type],
-                                                      [tmpNewFile.desc],
-                                                      [tmpNewFile.compressedData],
-                                                      [true] );
-
+      let uncompressedKeccak256 = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(formData.get('fileData')));
       console.log("Upload Asset Result:")
       console.log(upload);
       console.log('txHash', upload.hash);
-      console.log('dataHash', tmpNewFile.uncompressedKeccak256);
+      console.log('dataHash', uncompressedKeccak256);
     }
 
     async function updateWebsite(){
@@ -117,13 +64,12 @@
       let siteDataHashes = [formData.get("websiteDataHashes")];
       let siteTxHashes = [formData.get("websiteTxHashes")];
 
-      let update = await lnrWebContract.updateWebsite(domainAsBytes32,
+      let update = await lnrWeb.updateWebsite(domainAsBytes32,
                                                       siteDescription,
                                                       siteLinks,
                                                       siteDataHashes,
                                                       siteTxHashes
                                                       );
-      console.log("Update Website Result:");
       console.log(update);
     }
 
@@ -131,53 +77,9 @@
     async function viewWebsite(){
       let formData = new FormData(document.getElementById("viewWebsite"));
       let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
-      let website = await lnrWebContract.getWebsite(domainAsBytes32);
-      console.log("Website Data:");
+      let website = await lnrWeb.getWebsite(domainAsBytes32);
       console.log(website);
-      let pageObject = await getDataFromChain(website.pageTxHashArray[0], website.pageHashArray[0]);
-      //console.log(pageObject);
-      pageObject.data = await replaceCSS(pageObject.data, true);
-      pageObject.data = await replaceJS(pageObject.data, true);
-      //console.log(pageObject.data);
-      document.getElementById('chain_frame').srcdoc = pageObject.data;
-    }
-
-    async function fetchBase64Data(dataUrl){
-      if(dataUrl.indexOf("derp://") > -1){
-        let splitData = dataUrl.split("/");
-        let txHash = splitData[2];
-        let dataHash = splitData[3];
-        let chainData = await getDataFromChain(txHash,dataHash);
-        return [true, btoa(chainData.data)];
-      }
-      else {
-        let tmpData = await fetch(dataUrl);
-        tmpData = await tmpData.text();
-        alert("Offchain data - This will be embedded directly into your page and make it larger. consider using on-chain data\n\n" + dataUrl);
-        return [false, btoa(tmpData)]; // base64 encoded string
-      }
-    }
-
-    async function replaceCSS(site, viewIt){
-      let regexp = '<link rel="stylesheet" href="([^">]+)">';
-      let matches = site.matchAll(regexp);
-      for (const match of matches) {
-        let tmpData = await fetchBase64Data(match[1]);
-        if(viewIt || !tmpData[0])
-          site = site.replace(match[1], "data:text/css;base64, " + tmpData[1]);
-      }
-      return site;
-    }
-
-    async function replaceJS(site, viewIt){
-      let regexp = '<script (.*?)src="([^">]+)">[\s\S]*?<\/script>';
-      let matches = site.matchAll(regexp);
-      for (const match of matches) {
-        let tmpData = await fetchBase64Data(match[2]);
-        if(viewIt || !tmpData[0])
-          site = site.replace(match[2], "data:text/javascript;base64, " + tmpData[1]);
-      }
-      return site;
+      document.getElementById('chain_frame').srcdoc = website.finalData;
     }
 
     async function generateWebsite(viewIt){
@@ -195,8 +97,8 @@
 
       let outputToChainArray = [];
       let websiteDisplayArray = [];
-      siteHTML = await replaceCSS(siteHTML, viewIt);
-      siteHTML = await replaceJS(siteHTML, viewIt);
+      siteHTML = await lnrWeb.replaceCSS(siteHTML, viewIt);
+      siteHTML = await lnrWeb.replaceJS(siteHTML, viewIt);
       let siteSplit = siteHTML.split("</head>");
 
       websiteDisplayArray.push(siteSplit[0]);
@@ -218,7 +120,7 @@
       console.log("Uncompressed: " + byteSize(viewableWebsite)/1000  + "kb")
       //console.log(compressedPage);
       document.getElementById('fileData').value = chainUploadWebsite;
-      compressedPage = compressData(chainUploadWebsite);
+      compressedPage = lnrWeb.compressData(chainUploadWebsite);
       //console.log(compressedPage);
       console.log("Compressed: " + byteSize(compressedPage)/1000  + "kb")
       document.getElementById('uploadNewFileDiv').style.display = "block";
