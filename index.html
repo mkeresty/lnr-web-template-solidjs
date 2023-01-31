@@ -1,10 +1,11 @@
 <html>
 <head>
+  <meta charset="UTF-8">
   <script src="https://cdn.jsdelivr.net/npm/csso@5.0.5/dist/csso.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier/4.0.0/htmlminifier.min.js" integrity="sha512-4iIsNBIgG/kZCukIg4oZDZe1ZBRUFfklAGUVpbck6xqjd+tBeX2WqtZChk/HrERHqEBky20H+UqUabF9whH+cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="lnr-ethers-0.1.0.js"></script>
+  <script src="lnr-ethers-1.0.0.js"></script>
 
   <script>
     const lnrWebAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"assetHash","type":"bytes32"},{"indexed":false,"internalType":"string","name":"assetName","type":"string"},{"indexed":false,"internalType":"string","name":"assetDescription","type":"string"}],"name":"NewAsset","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"domain","type":"bytes32"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"NewWebsite","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[],"name":"lnrResolverAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"lnrWebsites","outputs":[{"internalType":"bool","name":"derp","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"}],"name":"getWebsite","outputs":[{"components":[{"internalType":"bool","name":"derp","type":"bool"},{"internalType":"string[]","name":"linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"pageTxHashArray","type":"bytes32[]"}],"internalType":"structLNR_WEB_V0.Website","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"string[]","name":"_linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"_pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"_pageTxHashArray","type":"bytes32[]"}],"name":"updateWebsite","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"_assetHash","type":"bytes32[]"},{"internalType":"string[]","name":"_assetName","type":"string[]"},{"internalType":"string[]","name":"_assetType","type":"string[]"},{"internalType":"string[]","name":"_assetDescription","type":"string[]"},{"internalType":"bytes[]","name":"_assetData","type":"bytes[]"},{"internalType":"bool[]","name":"_zip","type":"bool[]"}],"name":"uploadAssets","outputs":[],"stateMutability":"nonpayable","type":"function"}];
@@ -20,7 +21,8 @@
     let og = {
       ethers: ethers,
       signer: null,
-      provider: null
+      provider: null,
+      lnr: null
     }
 
     async function connectWallet(){
@@ -32,6 +34,7 @@
       document.getElementById('eth_login_button').innerHTML = "Wallet:" + wallet.substring(0,6) + "..." + wallet.slice(wallet.length-4);
       og.signer = signer;
       og.provider = provider;
+      og.lnr = lnr;
       window.og = og;
       document.getElementById('web3Buttons').style.display = "inline-block";
     }
@@ -61,18 +64,23 @@
             finalData = decompressData(params[4][i]);
 
           //finalData = decodeURI(finalData); // makes the files larger
-          return {
-            hash: params[0][i],
-            name: params[1][i],
-            type: params[2][i],
-            desc: params[3][i],
-            raw : params[4][i],
-            data: finalData,
-            zip: params[5][i]
+          let computedHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(finalData));
+          if(computedHash === params[0][i])
+            return {
+              hash: params[0][i],
+              name: params[1][i],
+              type: params[2][i],
+              desc: params[3][i],
+              raw : params[4][i],
+              data: finalData,
+              zip: params[5][i]
+            }
+          else{
+            throw "HASH MISMATCH!"
           }
         }
       }
-      return false;
+      throw "Unable to locate asset: derp://" + tmpTxHash + "/" + tmpDataHash;
     }
 
     async function uploadNewFile(){
@@ -127,50 +135,57 @@
       console.log("Website Data:");
       console.log(website);
       let pageObject = await getDataFromChain(website.pageTxHashArray[0], website.pageHashArray[0]);
-      console.log(pageObject);
+      //console.log(pageObject);
+      pageObject.data = await replaceCSS(pageObject.data, true);
+      pageObject.data = await replaceJS(pageObject.data, true);
+      //console.log(pageObject.data);
       document.getElementById('chain_frame').srcdoc = pageObject.data;
     }
 
-
-
-    // if off chain, always embeds the code
-    // if on chain, returns the code if forDisplay=true and an <og> tag if forDisplay=false
-    async function loadDep(depObj, forDisplay){
-      try{
-        if(depObj.location ==="offchain"){
-          let tmpData = await fetch(depObj.link);
-          tmpData = await tmpData.text();
-          if(depObj.type === "text/css"){
-              return "<style>" + csso.minify(tmpData).css + "</style>";
-          }
-          alert("Dep not handled: " + JSON.stringify(depObj));
-        }
-        else{
-          let txHash = depObj.txHash;
-          let dataHash = depObj.dataHash;
-          if(depObj.type === "text/css"){
-            console.log(depObj)
-            if(forDisplay)
-              return "<style>" + (await getDataFromChain(depObj.txHash, depObj.dataHash)).data + "</style>";
-            else
-              return "<og type=\"" + depObj.type + "\" txHash=\"" + depObj.txHash + "\" dataHash=\"" + depObj.dataHash + "\">" + "</og>"
-          }
-        }
+    async function fetchBase64Data(dataUrl){
+      if(dataUrl.indexOf("derp://") > -1){
+        let splitData = dataUrl.split("/");
+        let txHash = splitData[2];
+        let dataHash = splitData[3];
+        let chainData = await getDataFromChain(txHash,dataHash);
+        return [true, btoa(chainData.data)];
       }
-      catch(e){
-        alert(e.message);
+      else {
+        let tmpData = await fetch(dataUrl);
+        tmpData = await tmpData.text();
+        alert("Offchain data - This will be embedded directly into your page and make it larger. consider using on-chain data\n\n" + dataUrl);
+        return [false, btoa(tmpData)]; // base64 encoded string
       }
-      alert("Dep not handled: " + JSON.stringify(depObj));
     }
 
-    async function loadWebsite(){
-      closeUpdateWebsite();
-      // gets all the dependancies and packs them into one file
-      let depsJSON = await fetch('website/deps.json');
+    async function replaceCSS(site, viewIt){
+      let regexp = '<link rel="stylesheet" href="([^">]+)">';
+      let matches = site.matchAll(regexp);
+      for (const match of matches) {
+        let tmpData = await fetchBase64Data(match[1]);
+        if(viewIt || !tmpData[0])
+          site = site.replace(match[1], "data:text/css;base64, " + tmpData[1]);
+      }
+      return site;
+    }
+
+    async function replaceJS(site, viewIt){
+      let regexp = '<script (.*?)src="([^">]+)">[\s\S]*?<\/script>';
+      let matches = site.matchAll(regexp);
+      for (const match of matches) {
+        let tmpData = await fetchBase64Data(match[2]);
+        if(viewIt || !tmpData[0])
+          site = site.replace(match[2], "data:text/javascript;base64, " + tmpData[1]);
+      }
+      return site;
+    }
+
+    async function generateWebsite(viewIt){
+      // this has all the code directly embedded into the page
       let siteCSS = await fetch('website/style.css');
       let siteJS = await fetch('website/index.js');
       let siteHTML = await fetch('website/index.html');
-      depsJSON = await depsJSON.json();
+
       siteCSS = await siteCSS.text();
       siteJS = await siteJS.text();
       siteHTML = await siteHTML.text();
@@ -180,42 +195,35 @@
 
       let outputToChainArray = [];
       let websiteDisplayArray = [];
+      siteHTML = await replaceCSS(siteHTML, viewIt);
+      siteHTML = await replaceJS(siteHTML, viewIt);
       let siteSplit = siteHTML.split("</head>");
 
       websiteDisplayArray.push(siteSplit[0]);
-      outputToChainArray.push(siteSplit[0]);
-      for(let i=0; i<depsJSON.length; i++){
-        websiteDisplayArray.push(await loadDep(depsJSON[i],true));
-        outputToChainArray.push(await loadDep(depsJSON[i],false));
-      }
-
       websiteDisplayArray.push("<style>" + siteCSS + "</style>");
-      outputToChainArray.push("<style>" + siteCSS + "</style>");
-
       websiteDisplayArray.push("<script>" + siteJS+ "<" + "/script>");
-      outputToChainArray.push("<script>" + siteJS+ "<" + "/script>");
-
       websiteDisplayArray.push("</head>");
-      outputToChainArray.push("</head>");
-
       websiteDisplayArray.push(siteSplit[1]);
-      outputToChainArray.push(siteSplit[1]);
+      return websiteDisplayArray.join("\n");
 
-      let uncompressedPage = websiteDisplayArray.join("\n");
-      let compressedPage = outputToChainArray.join("\n");
-      document.getElementById('chain_frame').srcdoc = uncompressedPage;
+    }
 
+    async function loadWebsite(){
+      closeUpdateWebsite();
+      let viewableWebsite = await generateWebsite(true);
+      let chainUploadWebsite = await generateWebsite(false);
+      document.getElementById('chain_frame').srcdoc = viewableWebsite;
 
       const byteSize = function(str){return (new Blob([str]).size)};
-      console.log("Uncompressed: " + byteSize(uncompressedPage)/1000  + "kb")
-
-      console.log(compressedPage);
-      document.getElementById('fileData').value = compressedPage;
-      compressedPage = compressData(compressedPage);
-      console.log(compressedPage);
+      console.log("Uncompressed: " + byteSize(viewableWebsite)/1000  + "kb")
+      //console.log(compressedPage);
+      document.getElementById('fileData').value = chainUploadWebsite;
+      compressedPage = compressData(chainUploadWebsite);
+      //console.log(compressedPage);
       console.log("Compressed: " + byteSize(compressedPage)/1000  + "kb")
       document.getElementById('uploadNewFileDiv').style.display = "block";
       document.getElementById('fileDataLabel').innerHTML = "File Data (updated @ " + (new Date().getTime()) + ")";
+
     }
 
     function openUpdateWebsite(){
