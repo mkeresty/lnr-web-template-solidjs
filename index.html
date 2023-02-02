@@ -2,6 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="https://cdn.jsdelivr.net/npm/csso@5.0.5/dist/csso.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/terser/dist/bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier/4.0.0/htmlminifier.min.js" integrity="sha512-4iIsNBIgG/kZCukIg4oZDZe1ZBRUFfklAGUVpbck6xqjd+tBeX2WqtZChk/HrERHqEBky20H+UqUabF9whH+cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="lnr-ethers-1.0.0.js"></script>
@@ -92,7 +93,12 @@
       siteHTML = await siteHTML.text();
 
       siteCSS = csso.minify(siteCSS).css;
+      var minJS = await Terser.minify(siteJS,{
+        compress: true,
+      });
+      siteJS = minJS.code;
       siteHTML = htmlMinify(siteHTML);
+
 
       let outputToChainArray = [];
       let websiteDisplayArray = [];
@@ -105,7 +111,7 @@
       websiteDisplayArray.push("<script>" + siteJS+ "<" + "/script>");
       websiteDisplayArray.push("</head>");
       websiteDisplayArray.push(siteSplit[1]);
-      return websiteDisplayArray.join("\n");
+      return htmlMinify(websiteDisplayArray.join("\n"),{collapseWhitespace: true});
 
     }
 
