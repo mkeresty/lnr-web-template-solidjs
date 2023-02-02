@@ -56,6 +56,25 @@
       console.log('dataHash', uncompressedKeccak256);
     }
 
+    async function uploadLibrary(){
+      let formData = new FormData(document.getElementById("uploadLibrary"));
+      let libraryText = await fetch(formData.get('libraryLink'));
+      libraryText = await libraryText.text();
+      console.log(libraryText.length);
+      let upload = await lnrWeb.uploadNewFile(formData.get('libraryName'),
+                                              formData.get('libraryType'),
+                                              formData.get('libraryDesc'),
+                                              libraryText );
+
+      let uncompressedKeccak256 = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(libraryText));
+      console.log("Upload Library Result:")
+      console.log(upload);
+      console.log('txHash', upload.hash);
+      console.log('dataHash', uncompressedKeccak256);
+      console.log("Create your script/css tag, and use the derp:// link below as the href");
+      console.log('derp://' + upload.hash + "/" + uncompressedKeccak256);
+    }
+
     async function updateWebsite(){
       let formData = new FormData(document.getElementById("updateWebsite"));
       let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
@@ -75,6 +94,7 @@
 
 
     async function viewWebsite(){
+      closeAllMenus();
       let formData = new FormData(document.getElementById("viewWebsite"));
       let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
       let website = await lnrWeb.getWebsite(domainAsBytes32);
@@ -116,7 +136,7 @@
     }
 
     async function loadWebsite(){
-      closeUpdateWebsite();
+      closeAllMenus();
       let viewableWebsite = await generateWebsite(true);
       let chainUploadWebsite = await generateWebsite(false);
       document.getElementById('chain_frame').srcdoc = viewableWebsite;
@@ -133,9 +153,20 @@
 
     }
 
-    function openUpdateWebsite(){
+    function closeAllMenus(){
+      closeUpdateWebsite();
+      closeUploadLibrary();
       closeUploadDiv();
+    }
+
+    function openUpdateWebsite(){
+      closeAllMenus();
       document.getElementById('updateWebsiteDiv').style.display = "block";
+    }
+
+    function openUploadLibrary(){
+      closeAllMenus();
+      document.getElementById('uploadLibraryDiv').style.display = "block";
     }
 
     function closeUpdateWebsite(){
@@ -144,6 +175,10 @@
 
     function closeUploadDiv(){
       document.getElementById('uploadNewFileDiv').style.display = "none";
+    }
+
+    function closeUploadLibrary(){
+      document.getElementById('uploadLibraryDiv').style.display = "none";
     }
 
   </script>
@@ -189,10 +224,29 @@
         <button type="button" onclick="closeUpdateWebsite()" style="display:inline-block;">Close</button>
       </div>
 
+      <div id="uploadLibraryDiv" style="display:none;background:white;padding:1rem;">
+        <form id="uploadLibrary">
+          Upload a library permanently to the eth blockchain<br>
+          Check the console for the EtherWeb link (derp://0x.../0x...)<br><br>
+          <label for="libraryName">Library name</label><br>
+          <input type="text" id="libraryName" name="libraryName" placeholder="bulma-0.9.4.min.css"><br>
+          <label for="libraryType">MIME Type</label><br>
+          <input type="text" id="libraryType" name="libraryType" placeholder="text/css"><br>
+          <label for="libraryDesc">Library Description</label><br>
+          <input type="text" id="libraryDesc" name="libraryDesc" placeholder="bulma CSS v0.9.4"><br>
+          <label for="libraryLink">Library CDN link</label><br>
+          <input type="text" id="libraryLink" name="libraryLink" placeholder='https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css'><br>
+          <br>
+        </form>
+        <button tyle="button" onclick="uploadLibrary()">Upload Library</button>
+        <button type="button" onclick="closeUploadLibrary()" style="display:inline-block;">Close</button>
+      </div>
+
       <button id="eth_login_button" onclick="connectWallet()" >Connect</button>
       <div id="web3Buttons" style="display:none;">
         <button id="load_page" onclick="loadWebsite()">Load local</button>
         <button id="update_website" onclick="openUpdateWebsite()">Update Website</button>
+        <button id="upload_library" onclick="openUploadLibrary()">Upload Library</button>
         <form id="viewWebsite" action="javascript:viewWebsite()" style="display:inline-block;">
           <input type="text" id="loadWebsiteName" name="websiteName" placeholder="test.og"><br>
           <input type="submit" value="View Website">
