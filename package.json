@@ -4,7 +4,18 @@
   "description": "A starting place for building dapps that are 100% on chain",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^4.0.3",
+    "vite-plugin-solid": "^2.5.0"
+  },
+  "dependencies": {
+    "solid-js": "^1.6.6"
   },
   "author": "Derp Herpenstein",
   "license": "ISC"
