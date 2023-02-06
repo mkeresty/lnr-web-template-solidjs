@@ -1,6 +1,6 @@
 import styles from './App.module.css';
 import * as THREE from 'three';
-import { createSignal, Switch, Match } from 'solid-js';
+import { createSignal, onMount, Show } from 'solid-js';
 
 
 const Home = () => {

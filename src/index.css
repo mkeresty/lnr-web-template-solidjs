@@ -41,3 +41,19 @@ body.dark {
 .lg {
 	background-image: linear-gradient(rgb(168, 155, 225), #90cdf4)
 }
+
+.errorClass {
+  border: solid red 2px;
+  outline-offset: 15px;
+  border-radius: 4px;
+}
+
+.errorBox {
+  background-color: rgb(225, 136, 136);
+  color: rgb(220, 88, 88);
+}
+
+.successBox{
+  background-color: rgb(153, 222, 159);
+  color: rgb(73, 123, 77);
+}
