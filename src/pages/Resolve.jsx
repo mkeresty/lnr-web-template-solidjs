@@ -51,7 +51,7 @@ const Resolve = () =>{
       var message = <>You do not own or control {currentName}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))
     }
-    if(primary !== null && og.utils.isAddress(primary)){
+    if(primary !== null && og.ethers.utils.isAddress(primary)){
       var curPrimary = await handleEthers(og.lnr.resolveName(currentName));
       var message = <>{currentName} is primary for {curPrimary}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))

@@ -19,7 +19,7 @@ export async function resolveOrReturn(nameAddress){
     }else{
     try{
         var tempname = await og.lnr.resolveName(nameAddress);
-        if(og.utils.isAddress(tempname)){
+        if(og.ethers.utils.isAddress(tempname)){
             var name = tempname;
         }
     } catch(error){
