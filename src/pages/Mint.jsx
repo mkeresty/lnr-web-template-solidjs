@@ -15,6 +15,7 @@ const Mint = () =>{
     const [modalSignature, setModalSignature] = createSignal('Lorem ipsum');
     const [modalMessage, setModalMessage] = createSignal('Lorem ipsum');
 
+    //do i really need this part below
     onMount(() => {
         if (showModal()) {
           setTimeout(() => {
