@@ -1,43 +1,8 @@
-import styles from './App.module.css';
+import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match, children, createEffect, mergeProps, Show, onMount } from 'solid-js';
-
-const MintBox = (props) => {
-    console.log("showing", props)
-  const merged = mergeProps({
-    type: 'start',
-    name: 'null',
-    owner: 'null',
-    signature: 'null',
-    onOk: () => console.log('Ok')
-  }, props); 
-
-  var msg = "";
-  if(props.type == "warning"){
-    var msg = <>{props.name} is owned by <a href={`https://etherscan.io/address/${props.owner}`} target="_blank"> {props.owner}</a></>
-  } 
-  if(props.type == "success"){
-    var msg = <> {props.name} minted! <a href={`https://etherscan.io/tx/${props.signature}`} target="_blank">View on Etherscan</a></>
-  }
-  if(props.type == "format"){
-    var msg = <>{props.name} - {props.signature}</>
-  } 
-
-  return(
-    <Show
-    when={props.type == "success"}
-    fallback={
-        <div class="box errorBox">
-       {msg}
-    </div>
-    }
-  >
-    <div class="box successBox">
-    {msg}
-    </div>
-    </Show>
-  )
-};
+import MessageBox from '../components/MessageBox';
+import { nameLookup } from '../utils/nameUtils';
 
 const Mint = () =>{
     var og = window.parent.og;
@@ -49,6 +14,7 @@ const Mint = () =>{
     const [modalName, setModalName] = createSignal('Lorem ipsum');
     const [modalOwner, setModalOwner] = createSignal('Lorem ipsum');
     const [modalSignature, setModalSignature] = createSignal('Lorem ipsum');
+    const [modalMessage, setModalMessage] = createSignal('Lorem ipsum');
 
     onMount(() => {
         if (showModal()) {
@@ -67,32 +33,40 @@ const Mint = () =>{
 
     async function mintOg(){
       const currentName = name();
-      var isValid = await og.lnr.isValidDomain(currentName)
+      var isValid = await og.lnr.isValidDomain(currentName);
       if(isValid[0] == false){
-        return(controlBox('format', currentName, "null", isValid[1]))
+        var message = <>{currentName} - {isValid[1]}</>
+        return(controlBox('format', currentName, "null", isValid[1], message))
       }
       var walletAddress = await og.signer.getAddress();
       var checked = await og.lnr.owner(currentName);
       if(checked == null){
         var signature = await og.lnr.reserve(currentName);
-        setBoxProps({error: false, signature: signature});
         if(signature){
-            controlBox("success", currentName, walletAddress, signature);
+            var message = <> {currentName} minted! <a href={`https://etherscan.io/tx/${signature}`} target="_blank">View on Etherscan</a></>
+            controlBox("success", currentName, walletAddress, signature, message);
         }
         return(signature);
       }
       if(checked && checked[0]){
-        controlBox("warning", currentName, checked[0], "null")
+        var nameorAddress = await nameLookup(checked[0])
+        var message = <>{currentName} is owned by <a href={`https://etherscan.io/address/${checked[0]}`} target="_blank"> {nameorAddress}</a></>
+        controlBox("warning", currentName, checked[0], "null", message)
         return(checked[0])
+      }
+      else{
+        var message = <>Oops something went wrong</>;
+        controlBox("warning", currentName, walletAddress, "null", message)
       }
       return
     }
 
-    const controlBox = (boxType, currentName, ownerAddress, signature)=>{
+    const controlBox = (boxType, currentName, ownerAddress, signature, message)=>{
         setModalType(boxType);
         setModalName(currentName);
         setModalOwner(ownerAddress);
         setModalSignature(signature);
+        setModalMessage(message);
         setShowModal(true);
       }
 
@@ -117,23 +91,24 @@ const Mint = () =>{
           <div class="block has-text-centered">
               <h3 class="title is-3 has-text-light">Mint</h3>
                   <input  
-                    class="input m-3" classList={{errorClass: errorBorder() === true}} type="text" placeholder="name.og"
+                    class="input mb-3 mt-3" classList={{errorClass: errorBorder() === true}} type="text" placeholder="name.og"
                     onInput={(e) => {
                       setShowModal(false); 
                       setName(e.target.value)
                     }}/>      
-                    <button class="button is-outlined m-3" onClick={mintOg}>Mint</button>
+                    <button class="button is-outlined mb-3" onClick={mintOg}>Mint</button>
                 <Show when={showModal()}>
-                    <MintBox
+                    <MessageBox
                     type={modalType()}
                     name={modalName()}
                     owner={modalOwner()}
                     signature={modalSignature()}
+                    message={modalMessage()}
                     onOk={() => {
                         setModalType('WARNING');
                         setShowModal(false);
                     }}>
-                    </MintBox>
+                    </MessageBox>
                 </Show>
                 
           </div>

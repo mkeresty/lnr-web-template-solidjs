@@ -1,4 +1,4 @@
-import styles from './App.module.css';
+import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, onMount, Show } from 'solid-js';
 
@@ -6,9 +6,10 @@ import { createSignal, onMount, Show } from 'solid-js';
 const Home = () => {
     return(
       <div class="page">
+        <br />
         <div class="columns is-mobile">  
   
-  <div class="column is-10 is-offset-1 pb-10">
+        <div class="column is-10 is-offset-1 pb-10">
           <div class="card lg has-text-centered">
           <br/>
           <p class="title has-text-light">

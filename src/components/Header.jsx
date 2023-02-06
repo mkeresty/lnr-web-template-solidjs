@@ -1,7 +1,7 @@
-import styles from './App.module.css';
+import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match } from 'solid-js';
-
+import { nameLookup } from '../utils/nameUtils';
 
 const Header = ({ callback }) => {
     
@@ -14,13 +14,15 @@ const Header = ({ callback }) => {
   
       var walletAddress = await og.signer.getAddress();
       setConnected(true);
-      setAddress(walletAddress)
+      var nameorAddress = await nameLookup(walletAddress)
+      return(setAddress(nameorAddress))
     
     }
   
     const setRouteTo = (route) => {
       callback(route)
     }
+
   
   
   
@@ -104,7 +106,7 @@ const Header = ({ callback }) => {
         <div class="navbar-item">
           <div class="buttons">
           <button onClick={derp} class="button is-outlined m-3">
-          {address}
+          {address()}
       </button>
   
           </div>

@@ -50,10 +50,35 @@ body.dark {
 
 .errorBox {
   background-color: rgb(225, 136, 136);
-  color: rgb(220, 88, 88);
+  color: rgb(184, 42, 42);
 }
 
 .successBox{
   background-color: rgb(153, 222, 159);
-  color: rgb(73, 123, 77);
+  color: rgb(25, 99, 31);
+}
+
+.animated {
+  animation-delay: 2000ms;
+  -webkit-animation-duration: 2s;animation-duration: 2s;
+  -webkit-animation-fill-mode: both;animation-fill-mode: both;
+}
+
+@-webkit-keyframes fadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+@keyframes fadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+.fadeOut {
+  -webkit-animation-name: fadeOut;
+  animation-name: fadeOut;
+}
+
+.smoothTransition {
+  transition: transform 1s ease-in-out;
 }
