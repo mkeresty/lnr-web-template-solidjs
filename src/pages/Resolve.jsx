@@ -239,4 +239,4 @@ const Resolve = () =>{
   )
 }
 
-export default Resolve
+export default Resolve;

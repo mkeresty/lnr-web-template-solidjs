@@ -7,7 +7,6 @@ import { nameLookup, handleEthers } from '../utils/nameUtils';
 const Mint = () =>{
     var og = window.parent.og;
     const [name, setName] = createSignal('');
-    const [errorBorder, setErrorBorder] = createSignal(false);
 
     const [showModal, setShowModal] = createSignal(false);
     const [modalType, setModalType] = createSignal('nothisstart');
@@ -98,7 +97,7 @@ const Mint = () =>{
           <div class="block has-text-centered">
               <h3 class="title is-3 has-text-light">Mint</h3>
                   <input  
-                    class="input mb-3 mt-3" classList={{errorClass: errorBorder() === true}} type="text" placeholder="name.og"
+                    class="input mb-3 mt-3" type="text" placeholder="name.og"
                     onInput={(e) => {
                       setShowModal(false); 
                       setName(e.target.value)

@@ -51,6 +51,9 @@ const Header = ({ callback }) => {
           </a>
   
           <div  class="navbar-dropdown">
+          <a onClick={()=>setRouteTo("Search")} class="navbar-item">
+              Search
+            </a>
             <a onClick={()=>setRouteTo("Mint")} class="navbar-item">
               Mint
             </a>

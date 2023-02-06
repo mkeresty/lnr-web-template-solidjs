@@ -8,6 +8,7 @@ import Transfer from './pages/Transfer';
 import Mint from './pages/Mint';
 import Header from './components/Header';
 import Home from './pages/Home';
+import Search from './pages/search';
 
 function App() {
 
@@ -40,6 +41,9 @@ function App() {
         </Match>
         <Match when={route() == "Resolve"}>
           <Resolve />
+        </Match>
+        <Match when={route() == "Search"}>
+          <Search />
         </Match>
       </Switch>
     </div>
