@@ -46,8 +46,16 @@ const Search = () =>{
             return(controlErrorBox("success", message))
         }
         var primary = await handleEthers(og.lnr.resolveName(currentName));
+        if(primary){
+            return(controlBox("name", currentName, owner[0], primary, owner[1]))
+        }
+        else {
+        var message = <>Oops something went wrong</>;
+        return(controlErrorBox("warning", message))
+        }
 
-        return(controlBox("name", currentName, owner[0], primary, owner[1]))
+
+        
     }
 
     const controlBox = (boxType, currentName, ownerAddress, primary, wrapped)=>{
