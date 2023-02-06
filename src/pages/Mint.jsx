@@ -2,7 +2,7 @@ import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match, children, createEffect, mergeProps, Show, onMount } from 'solid-js';
 import MessageBox from '../components/MessageBox';
-import { nameLookup } from '../utils/nameUtils';
+import { nameLookup, handleEthers } from '../utils/nameUtils';
 
 const Mint = () =>{
     var og = window.parent.og;
@@ -39,16 +39,22 @@ const Mint = () =>{
         return(controlBox('format', currentName, "null", isValid[1], message))
       }
       var walletAddress = await og.signer.getAddress();
-      var checked = await og.lnr.owner(currentName);
+      var checked = await handleEthers(og.lnr.owner(currentName));
       if(checked == null){
-        var signature = await og.lnr.reserve(currentName);
+        var signature = await handleEthers(og.lnr.reserve(currentName));
         if(signature){
             var message = <> {currentName} minted! <a href={`https://etherscan.io/tx/${signature}`} target="_blank">View on Etherscan</a></>
             controlBox("success", currentName, walletAddress, signature, message);
+            return(signature);
         }
-        return(signature);
+        else{
+          var message = <>Oops something went wrong</>;
+          controlBox("warning", currentName, walletAddress, "null", message)
+        }
+
+        
       }
-      if(checked && checked[0]){
+      if(checked && checked!== false){
         var nameorAddress = await nameLookup(checked[0])
         var message = <>{currentName} is owned by <a href={`https://etherscan.io/address/${checked[0]}`} target="_blank"> {nameorAddress}</a></>
         controlBox("warning", currentName, checked[0], "null", message)
@@ -62,6 +68,7 @@ const Mint = () =>{
     }
 
     const controlBox = (boxType, currentName, ownerAddress, signature, message)=>{
+        setShowModal(false); 
         setModalType(boxType);
         setModalName(currentName);
         setModalOwner(ownerAddress);

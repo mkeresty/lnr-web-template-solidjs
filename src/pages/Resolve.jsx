@@ -2,7 +2,7 @@ import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match } from 'solid-js';
 import MessageBox from '../components/MessageBox';
-import { nameLookup, resolveOrReturn } from '../utils/nameUtils';
+import { nameLookup, resolveOrReturn, handleEthers } from '../utils/nameUtils';
 
 const Resolve = () =>{
   var og = window.parent.og;
@@ -23,21 +23,36 @@ const Resolve = () =>{
       return(controlBox('format', currentName, "null", isValid[1], message))
     }
     var walletAddress = await og.signer.getAddress();
-    var isOwner = await lnr.verifyIsNameOwner(name(), walletAddress);
-    var checked = await og.lnr.owner(name())
-    var primary = await og.lnr.owner(name())
-    if(checked && isOwner && primary == null){
-      var signature = await og.lnr.setPrimary(name());
-      var message = <>{currentName} set as primary <a href={`https://etherscan.io/address/${checkedAddress}`} target="_blank"> View on Etherscan</a></>;
-      controlBox("success", currentName, walletAddress, "null", message)
-      return(signature);
+    var isOwner = await handleEthers(og.lnr.verifyIsNameOwner(name(), walletAddress));
+    var primary = await handleEthers(og.lnr.resolveName(name()));
+    var checked = await handleEthers(og.lnr.owner(currentName));
+    if(checked == false){
+      var message = <>Oops something went wrong</>;
+      return(controlBox("warning", currentName, walletAddress, "null", message))
     }
-    if(!isOwner){
+    if(checked[0] !== walletAddress && checked !== false){
+      var message = <>You do not own {currentName}</>
+      return(controlBox("warning", currentName, walletAddress, "null", message))
+    }
+    if(isOwner && primary == null){
+      var signature = await handleEthers(og.lnr.setPrimary(name()));
+      if(signature){
+        var message = <>{currentName} set as primary <a href={`https://etherscan.io/address/${checkedAddress}`} target="_blank"> View on Etherscan</a></>;
+        controlBox("success", currentName, walletAddress, "null", message)
+        return(signature);
+      }
+      else{
+        var message = <>Oops something went wrong</>;
+        controlBox("warning", currentName, walletAddress, "null", message)
+      }
+
+    }
+    if(!isOwner && checked !== false){
       var message = <>You do not own or control {currentName}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))
     }
-    if(primary !== null){
-      var curPrimary = await og.lnr.resolveName(currentName);
+    if(primary !== null && og.utils.isAddress(primary)){
+      var curPrimary = await handleEthers(og.lnr.resolveName(currentName));
       var message = <>{currentName} is primary for {curPrimary}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))
     }
@@ -56,16 +71,26 @@ const Resolve = () =>{
       return(controlBox('format', currentName, "null", isValid[1], message))
     }
     var walletAddress = await og.signer.getAddress();
-    var isOwner = await lnr.verifyIsNameOwner(name(), walletAddress);
-    var checked = await og.lnr.owner(name())
-    var primary = await og.lnr.owner(name())
+    var isOwner = await handleEthers(og.lnr.verifyIsNameOwner(name(), walletAddress));
+    var checked = await handleEthers(og.lnr.owner(name()));
+    if(checked == false){
+      var message = <>Oops something went wrong</>;
+      return(controlBox("warning", currentName, walletAddress, "null", message))
+    }
+    var primary = await handleEthers(og.lnr.owner(name()));
     if(checked && isOwner && primary !== null){
-      var signature = await og.lnr.unsetPrimary(name());
+      var signature = await handleEthers(og.lnr.unsetPrimary(name()));
+      if(signature){
       var message = <>{currentName} unset <a href={`https://etherscan.io/address/${checkedAddress}`} target="_blank"> View on Etherscan</a></>;
       controlBox("success", currentName, walletAddress, "null", message)
       return(signature);
+      }
+      else{
+        var message = <>Oops something went wrong</>;
+        controlBox("warning", currentName, walletAddress, "null", message)
+      }
     }
-    if(!isOwner){
+    if(!isOwner && checked !== false){
       var message = <>You do not own or control {currentName}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))
     }
@@ -85,15 +110,21 @@ const Resolve = () =>{
       return(controlBox('format', currentName, "null", isValid[1], message))
     }
     var walletAddress = await og.signer.getAddress();
-    var checked = await og.lnr.owner(name())
+    var checked = await handleEthers(og.lnr.owner(name()));
     var nameorAddress = await nameLookup(otherAddress())
     if(checked && checked[0] == walletAddress){
-      var signature = await og.lnr.setController(name(), otherAddress());
+      var signature = await handleEthers(og.lnr.setController(name(), otherAddress()));
+      if(signature){
       var message = <>Controller set for {currentName}  - {nameorAddress}<a href={`https://etherscan.io/address/${checkedAddress}`} target="_blank"> View on Etherscan</a></>;
       controlBox("success", currentName, walletAddress, "null", message)
       return(signature);
+      }
+      else{
+        var message = <>Oops something went wrong</>;
+        controlBox("warning", currentName, walletAddress, "null", message)
+      }
     }
-    if(checked[0] !== walletAddress){
+    if(checked[0] !== walletAddress && checked!== false){
       var message = <>You do not own {currentName}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))
     }
@@ -112,15 +143,21 @@ const Resolve = () =>{
       return(controlBox('format', currentName, "null", isValid[1], message))
     }
     var walletAddress = await og.signer.getAddress();
-    var checked = await og.lnr.owner(name())
-    var nameorAddress = await nameLookup(otherAddress())
+    var checked = await handleEthers(og.lnr.owner(name()));
+    var nameorAddress = await nameLookup(otherAddress());
     if(checked && checked[0] == walletAddress){
-      var signature = await og.lnr.unsetController(name(), otherAddress());
+      var signature = await handleEthers(og.lnr.unsetController(name(), otherAddress()));
+      if(signature){
       var message = <>Controller removed for {currentName} - {nameorAddress}<a href={`https://etherscan.io/address/${checkedAddress}`} target="_blank"> View on Etherscan</a></>;
       controlBox("success", currentName, walletAddress, "null", message)
       return(signature);
+      }
+      else{
+        var message = <>Oops something went wrong</>;
+        controlBox("warning", currentName, walletAddress, "null", message)
+      }
     }
-    if(checked[0] !== walletAddress){
+    if(checked[0] !== walletAddress && checked!== false){
       var message = <>You do not own {currentName}</>
       return(controlBox("warning", currentName, walletAddress, "null", message))
     }
@@ -132,7 +169,8 @@ const Resolve = () =>{
   }
 
   const controlBox = (boxType, currentName, ownerAddress, signature, message)=>{
-    console.log("showing modal")
+    console.log("showing modal");
+    setShowModal(false); 
     setModalType(boxType);
     setModalName(currentName);
     setModalOwner(ownerAddress);
@@ -166,13 +204,13 @@ const Resolve = () =>{
         <div class="block has-text-centered">
             <h3 class="title is-3 has-text-light">Resolve</h3>
                 <input  
-                  class="input m-3" type="text" placeholder="name"
+                  class="input mt-3 mb-3" type="text" placeholder="name"
                   onInput={(e) => {
                     setShowModal(false); 
                     setName(e.target.value)
                   }}/>
                   <input  
-                  class="input m-3" type="text" placeholder="address"
+                  class="input mt-3 mb-3" type="text" placeholder="address"
                   onInput={(e) => {
                     setShowModal(false); 
                     setOtherAddress(e.target.value)

@@ -29,3 +29,14 @@ export async function resolveOrReturn(nameAddress){
     console.log("returning", name)
     return(name)};
 }
+
+export async function handleEthers(fn){
+    try{
+        var signature = await fn();
+        return(signature)
+    } catch(error){
+        console.log(error)
+        return(false)
+    }
+
+};

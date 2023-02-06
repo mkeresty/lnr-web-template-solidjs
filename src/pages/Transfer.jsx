@@ -2,7 +2,7 @@ import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match } from 'solid-js';
 import MessageBox from '../components/MessageBox';
-import { nameLookup, resolveOrReturn } from '../utils/nameUtils';
+import { nameLookup, resolveOrReturn, handleEthers } from '../utils/nameUtils';
 
 const Transfer = () =>{
     var og = window.parent.og;
@@ -29,15 +29,22 @@ const Transfer = () =>{
         console.log("not today")
         return(controlBox("warning", currentName, walletAddress, "null", message))
       }
-      var checked = await og.lnr.owner(currentName);
+      var checked = await handleEthers(og.lnr.owner(currentName));
+      console.log("checked is", checked)
       if(checked && checked[0] == walletAddress){
         var nameorAddress = await nameLookup(walletAddress)
-        var signature = await og.lnr.transfer(checkedAddress, currentName);
+        var signature = await handleEthers(og.lnr.transfer(checkedAddress, currentName));
+        if(signature){
         var message = <>{currentName} transfered to <a href={`https://etherscan.io/address/${checkedAddress}`} target="_blank"> {nameorAddress}</a></>;
         controlBox("success", currentName, walletAddress, "null", message)
         return(signature);
+        }
+        else{
+          var message = <>Oops something went wrong</>;
+          controlBox("warning", currentName, walletAddress, "null", message)
+        }
       }
-      if(checked[0] !== walletAddress){
+      if(checked[0] !== walletAddress && checked!== false){
         var message = <>You do not own {currentName}</>
         return(controlBox("warning", currentName, walletAddress, "null", message))
       }
@@ -49,7 +56,8 @@ const Transfer = () =>{
     }
 
     const controlBox = (boxType, currentName, ownerAddress, signature, message)=>{
-      console.log("showing modal")
+      console.log("showing modal");
+      setShowModal(false); 
       setModalType(boxType);
       setModalName(currentName);
       setModalOwner(ownerAddress);
@@ -82,14 +90,14 @@ const Transfer = () =>{
           <div class="block has-text-centered">
               <h3 class="title is-3 has-text-light">Transfer</h3>
                   <input  
-                    class="input m-3" type="text" placeholder="name.og"
+                    class="input mt-3 mb-3" type="text" placeholder="name.og"
                     onInput={(e) => {
                       setShowModal(false); 
                       setName(e.target.value)
                     }}/>
                     <br />
                     <input  
-                    class="input m-3" type="text" placeholder="primary.og or address"
+                    class="input mt-3 mb-3" type="text" placeholder="primary.og or address"
                     onInput={(e) => {
                       setShowModal(false); 
                       setTransferAddress(e.target.value)
