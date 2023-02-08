@@ -91,6 +91,7 @@ export async function getWrappedNames(){
 
 export async function getUnwrappedNames(){
     var og = window.parent.og;
+    var thegraph = "https://api.studio.thegraph.com/query/42000/linagee/v0.0.1"
     var tempAddress = "0x00C3670F155f2a0CA2b68882666CbA19d14e4943";
     var myaddress = "0xD0B12c1123a83d85ddf1F1ff23B5aF3FCDbF6799"
     var other = "0x7e1877D6eD0574181E5508952CFCD057B5AC5832";
@@ -99,49 +100,45 @@ export async function getUnwrappedNames(){
         "mainnet",
         "5b26585dfc17437da190dd2117648295"
       );
-    const lnrAddress = "0x5564886ca2C518d1964E5FCea4f423b41Db9F561";
-    var abi2 = [
-        "event reserve(bytes32 _name, address indexed src)"
-      ];
-      
-    const abi = [{"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "name","outputs": [{"name": "o_name","type": "bytes32"}],"type": "function","payable": false,"stateMutability": "view"},{"constant": true,"inputs": [{"name": "_name","type": "bytes32"}],"name": "owner","outputs": [{"name": "","type": "address"}],"type": "function","payable": false,"stateMutability": "view"},{"constant": true,"inputs": [{"name": "_name","type": "bytes32"}],"name": "content","outputs": [{"name": "","type": "bytes32"}],"type": "function","payable": false,"stateMutability": "view"},{"constant": true,"inputs": [{"name": "_name","type": "bytes32"}],"name": "addr","outputs": [{"name": "","type": "address"}],"type": "function","payable": false,"stateMutability": "view"},{"constant": false,"inputs": [{"name": "_name","type": "bytes32"}],"name": "reserve","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": true,"inputs": [{"name": "_name","type": "bytes32"}],"name": "subRegistrar","outputs": [{"name": "o_subRegistrar","type": "address"}],"type": "function","payable": false,"stateMutability": "view"},{"constant": false,"inputs": [{"name": "_name","type": "bytes32"},{"name": "_newOwner","type": "address"}],"name": "transfer","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": false,"inputs": [{"name": "_name","type": "bytes32"},{"name": "_registrar","type": "address"}],"name": "setSubRegistrar","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": false,"inputs": [],"name": "Registrar","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": false,"inputs": [{"name": "_name","type": "bytes32"},{"name": "_a","type": "address"},{"name": "_primary","type": "bool"}],"name": "setAddress","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": false,"inputs": [{"name": "_name","type": "bytes32"},{"name": "_content","type": "bytes32"}],"name": "setContent","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": false,"inputs": [{"name": "_name","type": "bytes32"}],"name": "disown","outputs": [],"type": "function","payable": true,"stateMutability": "payable"},{"constant": true,"inputs": [{"name": "_name","type": "bytes32"}],"name": "register","outputs": [{"name": "","type": "address"}],"type": "function","payable": false,"stateMutability": "view"},{"anonymous": false,"inputs": [{"indexed": true,"name": "name","type": "bytes32"}],"name": "Changed","type": "event"},{"anonymous": false,"inputs": [{"indexed": true,"name": "name","type": "bytes32"},{"indexed": true,"name": "addr","type": "address"}],"name": "PrimaryChanged","type": "event"},{"type": "fallback","payable": true,"stateMutability": "payable"}]
-    const contract = new ethers.Contract(lnrAddress, abi2, provider);
-    var currentBlock = await provider.getBlockNumber()
-    var filt = await provider.getTransactionCount(myaddress)
-    console.log(filt)
-
-    for (var i=currentBlock; i >= 0 ; --i) {
-        console.log("in loop", i)
-        try {
-            var block = await provider.getBlock(i);
-            if (block && block.transactions) {
-                console.log("in if")
-                block.transactions.forEach(function(e) {
-                    if (myaddress == e.from) {
-                        console.log(e)
-                    }
-                });
-            }
-        } catch (e) { console.error("Error in block " + i, e); }
+    var tokens = await theGraph(other);
+    if(tokens && tokens['data']['domains']){
+        const gData = tokens['data']['domains'];
+        const tokenids =[];
+        for(let i = 0; i < gData.length; i++){
+            console.log(i)
+            const curId = undefined;
+            const curBytes = (gData[i]).domainBytecode
+            console.log(curBytes)
+            const curName = og.lnr.bytes32ToString(curBytes);
+            console.log(curName)
+            const isValid = og.lnr.isValidDomain(curName.toString()+'.og');
+            console.log(isValid)
+            tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid[0], tokenId: curId, status: "unwrapped"});
+        }
+        console.log(tokenids)
+        return(tokenids)
     }
 
-
-    
-    
-    
-    // const balance = (await contract.balanceOf(tempAddress)).toString();
-    // if(balance > 0){
-    //     const tokenids =[];
-    //     for(let i = 0; i < balance; i++){
-    //         const curId = (await contract.tokenOfOwnerByIndex(tempAddress, i)).toString();
-    //         const curBytes = (await contract.idToName(curId)).toString();
-    //         const curName = og.lnr.bytes32ToString(curBytes);
-    //         const isValid = og.lnr.isValidDomain(curName+'.og');
-    //         tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid[0], tokenId: curId, status: "wrapped"});
-    //     }
-    //     console.log(tokenids)
-    //     return(tokenids)
-    // }
     return
+}
+
+async function theGraph(address){
+    const resp = await fetch(`https://api.studio.thegraph.com/query/42000/linagee/v0.0.1`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+      query {
+        domains(where: {owner_contains_nocase: "${address}"}) {
+            domainUtf8,
+            domainBytecode
+          }
+        
+    }`
+      }),
+    }).then((res)=>{
+        return(res.json())})
+
+    return(resp)
 }
 
