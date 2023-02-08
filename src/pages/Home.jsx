@@ -5,22 +5,25 @@ import { nameLookup, handleEthers, getWrappedNames, getUnwrappedNames, getAllNam
 
 const Home = () => {
   var og = window.parent.og;
+  const [name, setName] = createSignal('');
   const [names, setNames] = createSignal('');
-  const [namesCount, setNamesCount] = createSignal(0);
+  const [namesCount, setNamesCount] = createSignal();
 
   const getNames =async () =>{
-    var walletAddress = await og.signer.getAddress();
-    var test = "0x59657D79Fb2c0fa2C38C576f08866632Cf7729a6"
-    var repNames = await getAllNames(test);
-    setNames(repNames);
-    setNamesCount(repNames.length);
-    console.log(repNames)
-  }
+    if(name().length > 0){
+      var repNames = await getAllNames(name());
+      console.log('reo', repNames)
+      if(repNames.length > 1){
+        setNames(repNames);
+        setNamesCount(repNames.length);
+        return
+      }
+      return
 
-  const testfunwrapped =async () =>{
-    await getWrappedNames();
-  }
+    }
+    return
 
+  }
 
 
     return(
@@ -37,22 +40,36 @@ const Home = () => {
           
           <br/>
           </div>
-          <button class="button is-outlined m-3" onClick={getNames}>get names</button>
+          <input  
+                    class="input mb-3 mt-3" type="text" placeholder="address"
+                    onInput={(e) => {
+                      setName(e.target.value)
+                    }}/>  
+          <button class="button is-outlined m-3" onClick={getNames}>search</button>
           <br />
-          {namesCount}
+          <h2 class="title is-2 has-text-white-bis">{namesCount}</h2>
           <br/>
-  
+          <div class="columns is-multiline is-mobile">
           <For each={names()}>{(item, i) =>
-  
-          <div class="box is-ancestor">
-                  <div class="tile  m-1">
-                    <p class="title is-4">{item.name}</p>
-                    <br />
-                    <p class="subtitle is-6">{item.status}</p>
-                  </div>
+          <div class="column">
+                <div class="tile box is-vertical has-background-dark linagee-border has-text-white-bis fullHeight">
+                  <h6 class="title is-4 has-text-white-bis">{item.name}</h6>
+                  <h6 class="title is-6 has-text-white-bis">{item.status}</h6>
+                
+                <Show
+                  when={item.isValid == "true"}
+                  fallback={
+                    <span class="tag is-danger ml-7 mr-7 has-text-white-bis">Invalid</span>
+                  }
+                >
+                  <span class="tag is-success ml-7 mr-7 has-text-white-bis">Valid</span>
+                </Show>
+                </div>
             </div>
        
       }</For>
+
+</div>
       
 
       </div>
