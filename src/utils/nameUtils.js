@@ -10,6 +10,26 @@ export async function nameLookup(address){
     return(name);
 }
 
+export function isValidBytes(bytes){
+    var og = window.parent.og;
+    var isValid = false;
+    var name = (og.lnr.bytes32ToString(bytes)).toString();
+    try{
+        var validName = og.lnr.isValidDomain(name+'.og'); 
+        console.log(validName[1])
+        console.log(og.lnr.domainToBytes32(validName[1]));
+        console.log(bytes)
+        if (og.lnr.domainToBytes32(validName[1]) === bytes){
+            var isValid = true
+        }
+        console.log("valid", isValid)
+    }
+    catch(e){
+        console.log(e)
+    }
+    return(isValid)
+}
+
 export async function resolveOrReturn(nameAddress){
     console.log('nameoraddrss', nameAddress)
     var og = window.parent.og;
@@ -92,12 +112,12 @@ export async function getWrappedNames(address){
             const curName = og.lnr.bytes32ToString(curBytes);
             var isValid = false;
             try{
-                var isValid = (og.lnr.isValidDomain(curName.toString()+'.og'))[0]; 
-                console.log(isValid[0])
-            }
+                var isValid = og.lnr.isNormalizedBytes(curBytes)
+            } 
             catch(e){
                 console.log(e)
             }
+
             tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "wrapped"});
         }
         return(tokenids)
@@ -119,23 +139,15 @@ export async function getUnwrappedNames(address){
             console.log(curBytes)
             const curName = (og.lnr.bytes32ToString(curBytes)).toString();
             console.log(curName)
+            
             var isValid = false;
             try{
-                var norm = og.lnr.normalize(curName.toString()+'.og')
-                console.log(norm)
-                var isValid = (og.lnr.isValidDomain(curName.toString()+'.og'))[0]; 
-                console.log("valid", isValid)
-            }
+                var isValid = og.lnr.isNormalizedBytes(curBytes)
+            } 
             catch(e){
                 console.log(e)
             }
-            console.log("curName",curName)
-            // console.log('curname', curBytes)
-            // var curOwner = await handleEthers(og.lnr.owner(curName + '.og'));
-            // console.log(curOwner, 'cur')
-            // if(curOwner && curOwner[0]  == address){
-            //     tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid[0], tokenId: curId, status: "unwrapped"});
-            // }
+
 
             //Remove below--------------------------
             tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "unwrapped"});
