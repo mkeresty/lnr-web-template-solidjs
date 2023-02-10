@@ -30,10 +30,24 @@ async function derp(){
   console.log("log from chain: Wallet:" + walletAddress);
   console.log(og);
   console.log("UTF8 stuff 小馬, 昨夜のコンサートは最高でした جیم ذال sdf Д д Ж ж Ñ");
-  $("#test").html("Clone - jq good- ethers: good<br>" + walletAddress)
+  $("#test").html("Everything is awesome<br>" + walletAddress)
 }
 
+async function getTestState(){
+  try{   
+    let currentBlock = await og.provider.getBlockNumber();
+    let results = await og.lnrWeb.getWebsiteState("test.og",null,null,0,currentBlock);
+    console.log("Current State Updates");
+    for(let i=0; i<results.length; i++){
+      console.log(results[i]);
+    }
+  }
+  catch(e){
+      console.log(e);
+    }
+  }
 
 $(document).ready(function(){
   derp();
+  getTestState();
 });
