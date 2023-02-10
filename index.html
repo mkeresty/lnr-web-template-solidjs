@@ -6,14 +6,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier/4.0.0/htmlminifier.min.js" integrity="sha512-4iIsNBIgG/kZCukIg4oZDZe1ZBRUFfklAGUVpbck6xqjd+tBeX2WqtZChk/HrERHqEBky20H+UqUabF9whH+cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="lnr-ethers-1.0.0.js"></script>
-  <script src="lnr-web-0.1.1.js"></script>
+  <script src="lnr-web-0.1.3.js"></script>
 
   <script>
-    const lnrWebAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"assetHash","type":"bytes32"},{"indexed":false,"internalType":"string","name":"assetName","type":"string"},{"indexed":false,"internalType":"string","name":"assetDescription","type":"string"}],"name":"NewAsset","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"domain","type":"bytes32"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"NewWebsite","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[],"name":"lnrResolverAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"lnrWebsites","outputs":[{"internalType":"bool","name":"derp","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"}],"name":"getWebsite","outputs":[{"components":[{"internalType":"bool","name":"derp","type":"bool"},{"internalType":"string[]","name":"linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"pageTxHashArray","type":"bytes32[]"}],"internalType":"structLNR_WEB_V0.Website","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"string[]","name":"_linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"_pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"_pageTxHashArray","type":"bytes32[]"}],"name":"updateWebsite","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"_assetHash","type":"bytes32[]"},{"internalType":"string[]","name":"_assetName","type":"string[]"},{"internalType":"string[]","name":"_assetType","type":"string[]"},{"internalType":"string[]","name":"_assetDescription","type":"string[]"},{"internalType":"bytes[]","name":"_assetData","type":"bytes[]"},{"internalType":"bool[]","name":"_zip","type":"bool[]"}],"name":"uploadAssets","outputs":[],"stateMutability":"nonpayable","type":"function"}];
-
-    let lnrWebAddress = "0x9B1558c57Bf2B2686f2E024252E84BA746eBa665";// sepolia  //"0xeA367344Ed8DEb3DE732880b7EE8aDCa281935E0"; // local
-    let lnrWebContract;
-
     var htmlMinify = require('html-minifier').minify;
     let provider = new ethers.providers.Web3Provider(window.ethereum);
     let lnr;
@@ -24,20 +19,21 @@
       ethers: ethers,
       signer: null,
       provider: null,
-      lnr: null
+      lnr: null,
+      lnrWeb: null
     }
 
     async function connectWallet(){
       await provider.send("eth_requestAccounts", []);
       signer = provider.getSigner();
       lnr = new LNR(ethers, signer);
-      lnrWeb = new LNR_WEB(ethers, provider, signer);
+      lnrWeb = new LNR_WEB(lnr, provider);
       let wallet = await signer.getAddress();
-      lnrWebContract = new ethers.Contract(lnrWebAddress, lnrWebAbi, signer);
       document.getElementById('eth_login_button').innerHTML = "Wallet:" + wallet.substring(0,6) + "..." + wallet.slice(wallet.length-4);
       og.signer = signer;
       og.provider = provider;
       og.lnr = lnr;
+      og.lnrWeb = lnrWeb;
       window.og = og;
       document.getElementById('web3Buttons').style.display = "inline-block";
     }
@@ -54,6 +50,21 @@
       console.log(upload);
       console.log('txHash', upload.hash);
       console.log('dataHash', uncompressedKeccak256);
+      console.log("URL");
+      console.log('derp://' + upload.hash + "/" + uncompressedKeccak256);
+    }
+
+    async function updateState(){
+      let formData = new FormData(document.getElementById("updateStateForm"));
+      console.log(formData.get('websiteName'));
+      console.log(formData.get('websiteStateVersion'));
+      console.log(formData.get('websiteState'));
+      let upload = await lnrWeb.updateState(  formData.get('websiteName'),
+                                              formData.get('websiteStateVersion'),
+                                              formData.get('websiteState'));
+
+      console.log("Upload State Result:")
+      console.log(upload);
     }
 
     async function uploadLibrary(){
@@ -77,17 +88,14 @@
 
     async function updateWebsite(){
       let formData = new FormData(document.getElementById("updateWebsite"));
-      let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
-      let siteDescription = formData.get("websiteDesc");
-      let siteLinks = [formData.get("websiteLinks")];
-      let siteDataHashes = [formData.get("websiteDataHashes")];
-      let siteTxHashes = [formData.get("websiteTxHashes")];
+      let siteData = formData.get("websiteData");
+      let siteDataHash = formData.get("websiteDataHashes");
+      let siteTxHash = formData.get("websiteTxHashes");
 
-      let update = await lnrWeb.updateWebsite(domainAsBytes32,
-                                                      siteDescription,
-                                                      siteLinks,
-                                                      siteDataHashes,
-                                                      siteTxHashes
+      let update = await lnrWeb.updateWebsite(formData.get("websiteName"),
+                                                      siteDataHash,
+                                                      siteTxHash,
+                                                      siteData
                                                       );
       console.log(update);
     }
@@ -96,8 +104,7 @@
     async function viewWebsite(){
       closeAllMenus();
       let formData = new FormData(document.getElementById("viewWebsite"));
-      let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
-      let website = await lnrWeb.getWebsite(domainAsBytes32);
+      let website = await lnrWeb.getWebsite(formData.get("websiteName"));
       console.log(website);
       document.getElementById('chain_frame').srcdoc = website.finalData;
     }
@@ -157,6 +164,7 @@
       closeUpdateWebsite();
       closeUploadLibrary();
       closeUploadDiv();
+      closeUpdateState();
     }
 
     function openUpdateWebsite(){
@@ -169,6 +177,11 @@
       document.getElementById('uploadLibraryDiv').style.display = "block";
     }
 
+    function openUpdateState(){
+      closeAllMenus();
+      document.getElementById('updateStateDiv').style.display = "block";
+    }
+
     function closeUpdateWebsite(){
       document.getElementById('updateWebsiteDiv').style.display = "none";
     }
@@ -179,6 +192,10 @@
 
     function closeUploadLibrary(){
       document.getElementById('uploadLibraryDiv').style.display = "none";
+    }
+
+    function closeUpdateState(){
+      document.getElementById('updateStateDiv').style.display = "none";
     }
 
   </script>
@@ -203,6 +220,21 @@
         <button type="button" onclick="closeUploadDiv()" style="display:inline-block;">Close</button>
       </div>
 
+      <div id="updateStateDiv" style="display:none;background:white;padding:1rem;">
+        <form id="updateStateForm">
+          Add State information to a website (used to add dynamic content, blog, message board etc)<br><br>
+          <label for="websiteName">Website name</label><br>
+          <input type="text" id="websiteName" name="websiteName" placeholder="test.og"><br>
+          <label for="websiteStateVersion">Website State Version (if unsure, just leave as 0)</label><br>
+          <input type="text" id="websiteStateVersion" name="websiteStateVersion" value="0"><br>
+          <label for="websiteState">State Data (JSON)</label><br>
+          <input type="text" id="websiteState" name="websiteState" placeholder='{"data":{"derp":"herp"}}''><br>
+          <br>
+        </form>
+        <button tyle="button" onclick="updateState()">Update Website State</button>
+        <button type="button" onclick="closeUpdateState()" style="display:inline-block;">Close</button>
+      </div>
+
       <div id="updateWebsiteDiv" style="display:none;background:white;padding:1rem;">
         <form id="updateWebsite">
           For now we will be working with single page assets<br>
@@ -210,10 +242,8 @@
           Hash array should have an array of tx hashes that contain<br><br>
           <label for="websiteName">Website name</label><br>
           <input type="text" id="websiteName" name="websiteName" placeholder="test.og"><br>
-          <label for="websiteDesc">Website Description</label><br>
-          <input type="text" id="websiteDesc" name="websiteDesc" placeholder="test site [keywords, here]"><br>
-          <label for="websiteLinks">Link Array (leave empty for index.html)</label><br>
-          <input type="text" id="websiteLinks" name="websiteLinks" value=''><br>
+          <label for="websiteData">Website Data</label><br>
+          <input type="text" id="websiteData" name="websiteData" placeholder='{"data":{"derp":"herp"}}''><br>
           <label for="websiteDataHashes">Webpage Data Hash</label><br>
           <input type="text" id="websiteDataHashes" name="websiteDataHashes" value=''><br>
           <label for="websiteTxHashes">Webpage Tx Hash</label><br>
@@ -244,8 +274,9 @@
 
       <button id="eth_login_button" onclick="connectWallet()" >Connect</button>
       <div id="web3Buttons" style="display:none;">
-        <button id="load_page" onclick="loadWebsite()">Load local</button>
+        <button id="load_page" onclick="loadWebsite()">Load Local</button>
         <button id="update_website" onclick="openUpdateWebsite()">Update Website</button>
+        <button id="update_state" onclick="openUpdateState()">Update State</button>
         <button id="upload_library" onclick="openUploadLibrary()">Upload Library</button>
         <form id="viewWebsite" action="javascript:viewWebsite()" style="display:inline-block;">
           <input type="text" id="loadWebsiteName" name="websiteName" placeholder="test.og"><br>
