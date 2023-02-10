@@ -56,6 +56,22 @@ export async function resolveOrReturn(nameAddress){
 };
 }
 
+export async function getName(address){
+    var og = window.parent.og;
+    var name = undefined;
+    if(og.ethers.utils.isAddress(address) == true){
+        try{
+            var name = await og.lnr.lookupAddress(address)
+        }
+        catch(e){
+            //console.log(e)
+        }
+        return(name)
+    }
+    return(name)
+};
+
+
 export async function handleEthers(fn){
     try{
         var signature = await fn();

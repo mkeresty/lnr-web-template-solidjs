@@ -3,8 +3,9 @@ import * as THREE from 'three';
 import { createSignal, Switch, Match, children, createEffect, mergeProps, Show, onMount } from 'solid-js';
 import MessageBox from '../components/MessageBox';
 import { nameLookup, handleEthers } from '../utils/nameUtils';
+import { useGlobalContext } from '../GlobalContext/store';
 
-const Mint = () =>{
+const Mint = (props) =>{
     var og = window.parent.og;
     const [name, setName] = createSignal('');
 
@@ -14,6 +15,8 @@ const Mint = () =>{
     const [modalOwner, setModalOwner] = createSignal('Lorem ipsum');
     const [modalSignature, setModalSignature] = createSignal('Lorem ipsum');
     const [modalMessage, setModalMessage] = createSignal('Lorem ipsum');
+
+    const { store, setStore } = useGlobalContext();
 
     //do i really need this part below
     onMount(() => {
@@ -77,6 +80,10 @@ const Mint = () =>{
         setShowModal(true);
       }
 
+      const handlec = ()=>{
+        props.onSet("mintbob")
+      }
+
   
     return(
       <div class="page">
@@ -89,7 +96,9 @@ const Mint = () =>{
           <p class="title has-text-light">
           This entire site is on chain
           </p>
+          {store}
           <br/>
+          <button onClick={() => setStore("minting")}></button>
           </div>
       </div>
       </div>

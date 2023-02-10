@@ -27,6 +27,7 @@ body.dark {
   min-width: 12rem;
 }
 
+
 .linagee {
 	background-color: rgb(168, 155, 225);
 }
@@ -94,3 +95,4 @@ body.dark {
 .smoothTransition {
   transition: transform 1s ease-in-out;
 }
+

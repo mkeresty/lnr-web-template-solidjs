@@ -1,35 +1,55 @@
 import styles from '../App.module.css';
 import * as THREE from 'three';
-import { createSignal, Switch, Match } from 'solid-js';
-import { nameLookup } from '../utils/nameUtils';
+import { createSignal, Switch, Match, createEffect, mergeProp, onMount } from 'solid-js';
+import { nameLookup, getName } from '../utils/nameUtils';
+import { useGlobalContext } from '../GlobalContext/store';
 
-const Header = ({ callback }) => {
-    
-    const [connected, setConnected] = createSignal(false);
+const Header = () => {
     const [address, setAddress] = createSignal('Connect');
-  
-  
+    const [primary, setPrimary] = createSignal(undefined);
+    const { store, setStore } = useGlobalContext();
+
+
     var og = window.parent.og;
-    async function derp(){
-  
+
+    async function connect(){
       var walletAddress = await og.signer.getAddress();
-      setConnected(true);
-      var nameorAddress = await nameLookup(walletAddress)
-      return(setAddress(nameorAddress))
+      var name = await getName(walletAddress);
+      const prev = store()
+      var toSet = {userAddress: walletAddress, userPrimary: name};
+      setStore({...prev, ...toSet});
+      setAddress(walletAddress);
+      if(name){
+        setPrimary(name)
+      }
+      return
     
     }
+
+    createEffect(() => {
+        console.log("effect",store())
+    })
+
+  
   
     const setRouteTo = (route) => {
-      callback(route)
+        const prev = store()
+        var toSet = {route: route}
+        setStore({...prev, ...toSet});
     }
 
-  
+    onMount(async () => {
+      await connect()
+    });
+    
+
   
   
     return(<><nav class="navbar linagee"  role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <a class="navbar-item" href="https://linagee.vision">
         <img src="https://linagee.vision/LNR_L_Icon_White.svg" width="112" height="28"/>
+        {store}
       </a>
   
       <a role="button" class="navbar-burger " aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
@@ -44,7 +64,6 @@ const Header = ({ callback }) => {
         <a onClick={()=>setRouteTo("Home")} class="navbar-item">
           Home
         </a>
-  {setRouteTo}
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-item">
             Names
@@ -108,8 +127,8 @@ const Header = ({ callback }) => {
       <div class="navbar-end">
         <div class="navbar-item">
           <div class="buttons">
-          <button onClick={derp} class="button is-outlined m-3">
-          {address()}
+          <button onClick={connect} class="button is-outlined m-3">
+          {primary() || address()}
       </button>
   
           </div>
