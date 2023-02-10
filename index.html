@@ -20,8 +20,39 @@
       signer: null,
       provider: null,
       lnr: null,
-      lnrWeb: null
+      lnrWeb: null,
+      website: null
     }
+
+    function setLocalWebsiteTemplateData(){
+      let formData = new FormData(document.getElementById("updateWebsite"));
+        og.website = {
+          data: null,
+          finalData: formData.get("websiteData"),
+          pageHash: null,
+          pageTxHash: null,
+          domainAsBytes32: null
+        };
+    }
+
+    async function setWebsiteTemplateData(domain){
+      try{
+        let domainAsBytes32 = og.lnr.domainToBytes32(domain);
+        let filter = og.lnrWeb.lnrWebContract.filters.NewWebsite(domainAsBytes32);
+        let rawResults = await og.lnrWeb.lnrWebContract.queryFilter(filter, 0, og.provider.getBlockNumber());
+        let params = await og.lnrWeb.getRawDataFromChain(rawResults[rawResults.length-1].transactionHash);
+        og.website = {
+          data: params._data,
+          finalData: og.lnrWeb.decompressData(params._data),
+          pageHash: params._pageHash,
+          pageTxHash: params._pageTxHash,
+          domainAsBytes32: params._domain
+        }
+      }
+      catch(e){
+        throw e.message;
+      }
+    } 
 
     async function connectWallet(){
       await provider.send("eth_requestAccounts", []);
@@ -107,6 +138,7 @@
       let website = await lnrWeb.getWebsite(formData.get("websiteName"));
       console.log(website);
       document.getElementById('chain_frame').srcdoc = website.finalData;
+      setWebsiteTemplateData(formData.get("websiteName"));
     }
 
     async function generateWebsite(viewIt){
@@ -129,8 +161,8 @@
 
       let outputToChainArray = [];
       let websiteDisplayArray = [];
-      siteHTML = await lnrWeb.replaceCSS(siteHTML, viewIt);
-      siteHTML = await lnrWeb.replaceJS(siteHTML, viewIt);
+      siteHTML = await lnrWeb.replaceCSS(siteHTML, viewIt, "");
+      siteHTML = await lnrWeb.replaceJS(siteHTML, viewIt, "");
       let siteSplit = siteHTML.split("</head>");
 
       websiteDisplayArray.push(siteSplit[0]);
@@ -138,6 +170,7 @@
       websiteDisplayArray.push("<script type=\"module\">" + siteJS+ "<" + "/script>");
       websiteDisplayArray.push("</head>");
       websiteDisplayArray.push(siteSplit[1]);
+      setLocalWebsiteTemplateData();
       return htmlMinify(websiteDisplayArray.join("\n"),{collapseWhitespace: true});
 
     }
