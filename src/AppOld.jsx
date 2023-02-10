@@ -2,13 +2,13 @@ import logo from './logo.svg';
 import styles from './App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match } from 'solid-js';
-import Resolve from './pages/Resolve';
-import Wrap from './pages/Wrap';
-import Transfer from './pages/Transfer';
-import Mint from './pages/Mint';
+import Resolve from './pages/ResolveOld';
+import Wrap from './pages/WrapOld';
+import Transfer from './pages/TransferOld';
+import Mint from './pages/zMintOld';
 import Header from './components/Header';
-import Home from './pages/Home';
-import Search from './pages/search';
+import Home from './pages/zHomeOld';
+import Search from './pages/SearchOld';
 import Domain from './pages/Domain';
 
 function App() {

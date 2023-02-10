@@ -133,7 +133,6 @@ export async function getWrappedNames(address){
             catch(e){
                 console.log(e)
             }
-
             tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "wrapped"});
         }
         return(tokenids)

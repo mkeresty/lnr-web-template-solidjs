@@ -15,10 +15,12 @@ const Header = () => {
     async function connect(){
       var walletAddress = await og.signer.getAddress();
       var name = await getName(walletAddress);
-      const prev = store()
-      var toSet = {userAddress: walletAddress, userPrimary: name};
-      setStore({...prev, ...toSet});
-      setAddress(walletAddress);
+      const prev = store();
+      if(walletAddress){
+        var toSet = {userAddress: walletAddress, userPrimary: name, profileAddress: walletAddress};
+        setStore({...prev, ...toSet});
+        setAddress(walletAddress);
+      }
       if(name){
         setPrimary(name)
       }
@@ -64,6 +66,9 @@ const Header = () => {
         <a onClick={()=>setRouteTo("Home")} class="navbar-item">
           Home
         </a>
+        <a onClick={()=>setRouteTo("Profile")} class="navbar-item">
+          Profile
+        </a>
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-item">
             Names
@@ -75,15 +80,6 @@ const Header = () => {
             </a>
             <a onClick={()=>setRouteTo("Mint")} class="navbar-item">
               Mint
-            </a>
-            <a onClick={()=>setRouteTo("Transfer")} class="navbar-item">
-              Transfer
-            </a>
-            <a onClick={()=>setRouteTo("Wrap")} class="navbar-item">
-              Wrap
-            </a>
-            <a onClick={()=>setRouteTo("Resolve")} class="navbar-item">
-              Resolve
             </a>
           </div>
         </div>

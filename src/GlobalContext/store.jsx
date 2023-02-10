@@ -5,7 +5,7 @@ const GlobalContext = createContext();
 
 export function GlobalContextProvider(props) {
     
-    const [store, setStore] = createSignal({route: 'Home', domain: undefined, userAddress: undefined, userPrimary: undefined, isDomainOwner: undefined, isProfileOwner: undefined });
+    const [store, setStore] = createSignal({route: 'Home', domain: undefined, userAddress: undefined, userPrimary: undefined, profileAddress: undefined, isDomainOwner: undefined, isProfileOwner: undefined });
     
     return (
       <GlobalContext.Provider value={{ store, setStore }}>
