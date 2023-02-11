@@ -19,7 +19,7 @@ const Header = () => {
       if(walletAddress){
         var toSet = {userAddress: walletAddress, userPrimary: name, profileAddress: walletAddress};
         setStore({...prev, ...toSet});
-        setAddress(walletAddress);
+        setAddress(walletAddress.slice(0,4)+'...'+walletAddress.slice(-4));
       }
       if(name){
         setPrimary(name)
