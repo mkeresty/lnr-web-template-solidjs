@@ -46,10 +46,16 @@ const Profile = () =>{
     const handleDomain = (item)=>{
         console.log("dom", item)
         const prev = store()
-        var toSet = {route: "Domain", domain: item}
+        var toSet = {lastRoute: 'Profile',route: "Domain", domain: item}
         setStore({...prev, ...toSet});
     }
 
+    const goBack = ()=>{
+        const prev = store()
+        setRouteTo(prev.lastRoute)
+      }
+  
+  
 
 
   onMount(async () => {
@@ -62,6 +68,9 @@ const Profile = () =>{
 
       return(
         <div class="page"> 
+        <div class="ml-4 spaceRow">
+        <button class="button tagCount is-pulled-left" onClick={goBack}>back</button>
+        </div>
             <div class="columns" >
                 <div class="column ">
                     <div class="block  bw">
@@ -75,6 +84,7 @@ const Profile = () =>{
                 </div>
                 <div class="column  centerColumn profileInfo">
                 <div class="container p-4 pt-8 has-text-left">
+                <div class="is-hidden-mobile spacer"></div>
                         <h4 class="title is-4 has-light-text wh">
                             primary.og
                         </h4>

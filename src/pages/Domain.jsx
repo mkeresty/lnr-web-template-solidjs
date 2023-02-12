@@ -12,13 +12,18 @@ const Domain = () =>{
     const [namesCount, setNamesCount] = createSignal(0);
     const [wrappedCount, setWrappedCount] = createSignal(0);
     const [loading, setLoading] = createSignal(false);
+    const [transferAddress, setTransferAddress] = createSignal();
+    const [transferModal, setTransferModal] = createSignal(false);
+    const [primaryAddress, setPrimaryAddress] = createSignal();
+    const [controllerAddress, setControllerAddress] = createSignal();
   
     const { store, setStore } = useGlobalContext();
 
     const getNameData = ()=>{
       if(store().domain){
         setName(store().domain);
-        console.log(name())
+        console.log(name());
+        setControllerAddress(store().owner);
       }
       else{
         setRouteTo("Home")
@@ -26,10 +31,24 @@ const Domain = () =>{
 
     }
 
+    const getPrimaryAndController = (name)=>{
+      //do stuff
+      return
+    }
+
+    createEffect(()=>{
+      console.log(transferModal(), "m")
+    })
+
     const setRouteTo = (route) => {
         const prev = store()
-        var toSet = {route: route}
+        var toSet = {lastRoute: 'Domain',route: route}
         setStore({...prev, ...toSet});
+    }
+
+    const goBack = ()=>{
+      const prev = store()
+      setRouteTo(prev.lastRoute)
     }
 
 
@@ -44,6 +63,35 @@ const Domain = () =>{
 
       return(
         <div class="page"> 
+                    <div classList={{"modal": true , "is-active":transferModal()}}>   
+                  <div class="box dark-bg">
+                  <h3 class="title is-3 wh profilePrimary">
+                            {name().name}
+                        </h3>
+                    <br />
+                    <input  
+                    class="input mt-3 mb-3 dark-bg wh" type="text" placeholder="primary.og or address"
+                    onInput={(e) => {
+
+                      setTransferAddress(e.target.value)
+                    }}/>
+                  <div class="spaceRow">
+                  <button class="button tagCount is-pulled-right" onClick={()=>setTransferModal(false)}>close</button>
+                  <button class="button tagCount">Transfer</button>
+                  </div>
+
+                  </div>
+
+
+<button class="modal-close is-large" aria-label="close"></button>
+</div>
+        <div class="spaceRow ml-4">
+          <button class="button tagCount is-pulled-left" onClick={goBack}>back</button>
+          <Show
+            when={store().userAddress == name().owner}>
+              <button class="button tagCount is-pulled-right" onClick={()=>setTransferModal(true)}>transfer</button>
+          </Show>
+        </div>
             <div class="columns" >
                 <div class="column ">
                     <div class="block  bw">
@@ -56,10 +104,11 @@ const Domain = () =>{
                     </div>
                 </div>
                 <div class="column  centerColumn profileInfo">
-                <div class="container p-4 pt-8 has-text-left">
-                        <h4 class="title is-4 has-light-text wh">
+                <div class="container p-4 pt-8 has-light-text wh has-text-left">
+                <div class="is-hidden-mobile spacer"></div>
+                        <h3 class="title is-3 wh">
                             {name().name}
-                        </h4>
+                        </h3>
                         < br />
                         <div class="tags are-medium">
                           <span class="tag tagCount">
@@ -77,48 +126,63 @@ const Domain = () =>{
                 </div>
             </div>
             <div class="block  bw">
-            <div class="content p-4">
+            <div class="content p-4 has-text-left wh">
               
-            <h3 class="title is-3">
+            <h5 class="title is-5 wh">
               Owner
-            </h3>
-            <h4 class="subtitle is-4">
+            </h5>
+            <h6 class="subtitle is-6 wh">
               {name().owner}
-            </h4>
+            </h6>
             <hr class="solid"/>
-            <h3 class="title is-3">
+            <h5 class="title is-5 wh">
               ByteCode
-            </h3>
-            <h4 class="subtitle is-4">
+            </h5>
+            <h6 class="subtitle is-6 wh">
               {name().bytes}
-            </h4>
+            </h6>
             <hr class="solid"/>
-            <h3 class="title is-3">
+            <h5 class="title is-5 wh">
               Resolver
-            </h3>
-            <h4 class="subtitle is-4">
-              res
+            </h5>
+            <div class="spaceRow">
+            <input  
+              class="input dark-bg wh mw" type="text" placeholder="No primary set"
+              onInput={(e) => {
+                setPrimaryAddress(e.target.value)
+              }}/>
               <Show
                 when={store().userAddress == name().owner}>
-                  <button class="button">Set Primary</button>
+                  <button class="button tagCount">Set Primary</button>
               </Show>
-            </h4>
+              </div>
             <hr class="solid"/>
-            <h3 class="title is-3">
+            <h5 class="title is-5 wh">
               Controller
-            </h3>
-            <h4 class="subtitle is-4">
-              c
+            </h5>
+            <div class="spaceRow">
+
+              {/* SHOW ALL CONTROLLERS */}
+
+            <input  
+              class="input dark-bg wh mw" type="text" placeholder="No controller set"
+                    onInput={(e) => {
+                      setController(e.target.value)
+                    }}/>
               <Show
                 when={store().userAddress == name().owner}>
-                  <button class="button">Set Controller</button>
+                  <button class="button tagCount">Set Controller</button>
               </Show>
-            </h4>
+              </div>
             
 
             </div>
             </div>
+           
+
+
         </div>
+
       )
 }
 
