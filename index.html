@@ -5,8 +5,8 @@
   <script src="https://cdn.jsdelivr.net/npm/terser/dist/bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier/4.0.0/htmlminifier.min.js" integrity="sha512-4iIsNBIgG/kZCukIg4oZDZe1ZBRUFfklAGUVpbck6xqjd+tBeX2WqtZChk/HrERHqEBky20H+UqUabF9whH+cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="lnr-ethers-1.0.0.js"></script>
-  <script src="lnr-web-0.1.3.js"></script>
+  <script src="lnr-ethers-1.1.0.js"></script>
+  <script src="lnr-web-0.1.4.js"></script>
 
   <script>
     var htmlMinify = require('html-minifier').minify;
@@ -72,7 +72,7 @@
     async function uploadNewFile(){
       let formData = new FormData(document.getElementById("uploadNewFileForm"));
       let upload = await lnrWeb.uploadNewFile(formData.get('fileName'),
-                                              formData.get('fileType'),
+                                              formData.get('fileHeaders'),
                                               formData.get('fileDesc'),
                                               formData.get('fileData') );
 
@@ -100,11 +100,21 @@
 
     async function uploadLibrary(){
       let formData = new FormData(document.getElementById("uploadLibrary"));
+      console.log("Fetching " + formData.get('libraryLink'));
       let libraryText = await fetch(formData.get('libraryLink'));
+      let headers = libraryText.headers;
+      let outputHeaders = {};
+      headers.forEach(function(value,key){
+        if(key === "content-type")
+          outputHeaders[key] = value;
+      });
+      console.log(outputHeaders);
+      console.log("Creating upload tx");
+
       libraryText = await libraryText.text();
-      console.log(libraryText.length);
+      console.log("Uncompressed size: " + libraryText.length);
       let upload = await lnrWeb.uploadNewFile(formData.get('libraryName'),
-                                              formData.get('libraryType'),
+                                              JSON.stringify(outputHeaders),
                                               formData.get('libraryDesc'),
                                               libraryText );
 
@@ -242,11 +252,11 @@
           Check console for txHash and dataHash<br><br>
           <label for="fileName">File Name</label><br>
           <input type="text" id="fileName" name="fileName" placeholder="test.html"><br>
-          <label for="fileType">File Type:</label><br>
-          <input type="text" id="fileType" name="fileType" value="text/html"><br><br>
+          <label for="fileHeaders">File Type:</label><br>
+          <input type="text" id="fileHeaders" name="fileHeaders" readonly style="background:#D3D3D3;" value='{"content-type": "text/html"}'><br><br>
           <label for="fileDesc">File Description:</label><br>
           <input type="text" id="fileDesc" name="fileDesc" placeholder="my website, search, terms, here"><br><br>
-          <label id="fileDataLabel" for="fileType">File Data:</label><br>
+          <label id="fileDataLabel" for="fileData">File Data:</label><br>
           <input type="text" id="fileData" name="fileData" readonly style="background:#D3D3D3;" placeholder="<html>derp</html>"><br><br>
         </form>
         <button tyle="button" onclick="uploadNewFile()">Upload Asset</button>
@@ -293,8 +303,10 @@
           Check the console for the EtherWeb link (derp://0x.../0x...)<br><br>
           <label for="libraryName">Library name</label><br>
           <input type="text" id="libraryName" name="libraryName" placeholder="bulma-0.9.4.min.css"><br>
-          <label for="libraryType">MIME Type</label><br>
-          <input type="text" id="libraryType" name="libraryType" placeholder="text/css"><br>
+          <!--
+          <label style="display:none;"for="libraryType">MIME Type</label><br>
+          <input style="display:none;" type="text" id="libraryType" name="libraryType" placeholder="text/css"><br>
+          -->
           <label for="libraryDesc">Library Description</label><br>
           <input type="text" id="libraryDesc" name="libraryDesc" placeholder="bulma CSS v0.9.4"><br>
           <label for="libraryLink">Library CDN link</label><br>
