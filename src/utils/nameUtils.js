@@ -31,7 +31,6 @@ export function isValidBytes(bytes){
 }
 
 export async function resolveOrReturn(nameAddress){
-    console.log('nameoraddrss', nameAddress)
     var og = window.parent.og;
     var name = false;
     if(og.ethers.utils.isAddress(nameAddress) == true){
@@ -45,7 +44,29 @@ export async function resolveOrReturn(nameAddress){
                 console.log(tempname);
                 if(og.ethers.utils.isAddress(tempname)){
                     var name = tempname;
-                
+                }
+            } catch(error){
+                console.log(error)
+            }
+
+    console.log("returning", name)
+    return(name)
+};
+}
+
+export async function resolve(nameAddress){
+    var og = window.parent.og;
+    var name = false;
+    if(og.ethers.utils.isAddress(nameAddress) == true){
+        return(name)
+    }
+    else{
+        console.log("why in here")
+            try{
+                var tempname = await og.lnr.resolveName(nameAddress);
+                console.log(tempname);
+                if(og.ethers.utils.isAddress(tempname)){
+                    var name = tempname;
                 }
             } catch(error){
                 console.log(error)
@@ -70,6 +91,49 @@ export async function getName(address){
     }
     return(name)
 };
+
+export async function isControllerFun(name, address){
+    var og = window.parent.og;
+    var res = false;
+    if(og.ethers.utils.isAddress(address) == true){
+        try{
+            var res = await og.lnr.verifyIsNameOwner(name, address)
+        }
+        catch(e){
+            //console.log(e)
+        }
+        return(res)
+    }
+    return(res)
+};
+
+export async function getController(bytes){
+    var og = window.parent.og;
+    try {
+        var lnres = await og.lnr.resolverContract.Controller(bytes)
+        if(lnres !== "0x0000000000000000000000000000000000000000" && og.ethers.utils.isAddress(lnres) == true){
+            return(lnres)
+        }
+    }catch(error){
+        return(undefined)
+    }
+    return(undefined)
+}
+
+export async function getPrimaryAddress(name){
+    var og = window.parent.og;
+    try {
+        var lnres = await og.lnr.resolverName(name);
+        if(res.endsWith('.og')){
+            return(lnres)
+        }
+    }catch(error){
+        return(undefined)
+    }
+    return(undefined)
+}
+
+
 
 
 export async function handleEthers(fn){
@@ -126,6 +190,9 @@ export async function getWrappedNames(address){
             const curId = (await contract.tokenOfOwnerByIndex(address, i)).toString(); //HERE
             const curBytes = (await contract.idToName(curId)).toString();  //HERE
             const curName = og.lnr.bytes32ToString(curBytes);
+            var primary = await getPrimaryAddress(curName + '.og');
+            var controller = await getController(curBytes);
+
             var isValid = false;
             try{
                 var isValid = og.lnr.isNormalizedBytes(curBytes)
@@ -133,7 +200,7 @@ export async function getWrappedNames(address){
             catch(e){
                 console.log(e)
             }
-            tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "wrapped", owner: address});
+            tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "wrapped", owner: address, primary: primary, controller: controller});
         }
         return(tokenids)
     }
@@ -153,8 +220,9 @@ export async function getUnwrappedNames(address){
             const curBytes = ((gData[i]).domainBytecode).toString();
             console.log(curBytes)
             const curName = (og.lnr.bytes32ToString(curBytes)).toString();
-            console.log(curName)
-            
+            var primary = await getPrimaryAddress(curName + '.og');
+            var controller = await getController(curBytes);
+
             var isValid = false;
             try{
                 var isValid = og.lnr.isNormalizedBytes(curBytes)
@@ -165,7 +233,7 @@ export async function getUnwrappedNames(address){
 
 
             //Remove below--------------------------
-            tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "unwrapped", owner: address});
+            tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "unwrapped", owner: address, primary: primary, controller: controller});
 
            
         }

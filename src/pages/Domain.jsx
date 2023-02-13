@@ -1,29 +1,30 @@
 import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match, children, createEffect, mergeProps, Show, onMount } from 'solid-js';
-import { nameLookup, handleEthers, getWrappedNames, getUnwrappedNames, getAllNames } from '../utils/nameUtils';
+import { isControllerFun, resolveOrReturn } from '../utils/nameUtils';
 import { useGlobalContext } from '../GlobalContext/store';
 
 const Domain = () =>{
 
     var og = window.parent.og;
 
-    const [name, setName] = createSignal({bytes: undefined, name: undefined, isValid: undefined, tokenId: undefined, status: undefined, owner: undefined});
-    const [namesCount, setNamesCount] = createSignal(0);
-    const [wrappedCount, setWrappedCount] = createSignal(0);
+    const [name, setName] = createSignal({bytes: undefined, name: undefined, isValid: undefined, tokenId: undefined, status: undefined, owner: undefined, primary: undefined, controller: undefined});
     const [loading, setLoading] = createSignal(false);
     const [transferAddress, setTransferAddress] = createSignal();
     const [transferModal, setTransferModal] = createSignal(false);
-    const [primaryAddress, setPrimaryAddress] = createSignal();
-    const [controllerAddress, setControllerAddress] = createSignal();
+    const [isController, setIsController] = createSignal(false);
+    const [controllerState, setControllerState] = createSignal();
+
+    const [controllerTx, setControllerTx] = createSignal();
+    const [primaryTx, setPrimaryTx] = createSignal(undefined);
   
     const { store, setStore } = useGlobalContext();
 
-    const getNameData = ()=>{
+    const getNameData = async()=>{
       if(store().domain){
         setName(store().domain);
         console.log(name());
-        setControllerAddress(store().owner);
+        setIsController(await isControllerFun(store().domain, store().userAddress));
       }
       else{
         setRouteTo("Home")
@@ -55,9 +56,104 @@ const Domain = () =>{
 
   onMount(async () => {
     setLoading(true);
-    getNameData();
+    await getNameData();
     setLoading(false);
   });
+
+  const setPrimaryAddress = async()=>{
+    setLoading(true);
+    var tx = await og.lnr.setPrimary(name().name)
+    tx.wait().then(async (receipt) => {
+      setLoading(false);
+      if (receipt && receipt.status == 1) {
+         setLoading(false);
+         setPrimaryTx(store().userAddress);
+      }
+   });
+
+  }
+
+  const setControllerAddress = async()=>{
+    var check = await resolveOrReturn(controllerState());
+    if(!check){
+      return
+    }
+    setLoading(true);
+    var tx = await og.lnr.setController(name().name, controllerState());
+    tx.wait().then(async (receipt) => {
+      setLoading(false);
+      if (receipt && receipt.status == 1) {
+         setLoading(false);
+         setControllerTx(store().userAddress);
+      }
+   });
+  }
+
+  const unsetPrimaryAddress = async()=>{
+    setLoading(true);
+    var tx = await og.lnr.unsetPrimary(name().name);
+    tx.wait().then(async (receipt) => {
+      setLoading(false);
+      if (receipt && receipt.status == 1) {
+         setLoading(false);
+         setPrimaryTx(undefined);
+      }
+   });
+  }
+
+  const unsetControllerAddress = async()=>{
+    setLoading(true);
+    var tx = await og.lnr.unsetController(name().name, name().controller);
+    tx.wait().then(async (receipt) => {
+      setLoading(false);
+      if (receipt && receipt.status == 1) {
+         setLoading(false);
+         setControllerTx(undefined);
+      }
+   });
+  }
+
+  const handleTransfer = async()=>{
+    var check = await resolveOrReturn(transferAddress());
+    console.log("check", check, name().name)
+    if(!check){
+
+      return
+    }
+    setLoading(true);
+    setTransferModal(false);
+    if(name().status == "unwrapped"){
+      console.log("gr")
+      var tx = await og.lnr.linageeContract.transfer( transferAddress(), name().bytes);
+      console.log('tx', tx)
+      tx.wait().then(async (receipt) => {
+        setLoading(false);
+        if (receipt && receipt.status == 1) {
+           setLoading(false);
+           const prev = name()
+           var toSet = {owner: transferAddress()}
+           setName({...prev, ...toSet});
+        }
+     });
+
+    }
+    if(name().status == "wrapped"){
+      var tx = await og.lnr.wrappedContract.safeTransferFrom(store().userAddress, transferAddress(), name().tokenId);
+      tx.wait().then(async (receipt) => {
+        setLoading(false);
+        if (receipt && receipt.status == 1) {
+           setLoading(false);
+           const prev = name()
+           var toSet = {owner: transferAddress()}
+           setName({...prev, ...toSet});
+        }
+     });
+
+    }
+
+
+  }
+  
   
 
 
@@ -77,7 +173,7 @@ const Domain = () =>{
                     }}/>
                   <div class="spaceRow">
                   <button class="button tagCount is-pulled-right" onClick={()=>setTransferModal(false)}>close</button>
-                  <button class="button tagCount">Transfer</button>
+                  <button class="button tagCount" onClick={handleTransfer}>Transfer</button>
                   </div>
 
                   </div>
@@ -127,6 +223,9 @@ const Domain = () =>{
             </div>
             <div class="block  bw">
             <div class="content p-4 has-text-left wh">
+            <Show when={loading() == true}>
+                <progress class="progress is-small is-primary" max="100">15%</progress>
+                </Show>
               
             <h5 class="title is-5 wh">
               Owner
@@ -146,33 +245,32 @@ const Domain = () =>{
               Resolver
             </h5>
             <div class="spaceRow">
-            <input  
-              class="input dark-bg wh mw" type="text" placeholder="No primary set"
-              onInput={(e) => {
-                setPrimaryAddress(e.target.value)
-              }}/>
-              <Show
-                when={store().userAddress == name().owner}>
-                  <button class="button tagCount">Set Primary</button>
-              </Show>
+             <h6 class="subtitle is-6 wh">
+             {name().primary || primaryTx() ||"Resolver is not set"}
+              </h6> 
+              <Switch >
+                  <Match when={(isController() || name().owner == store().userAddress) && (name().primary == undefined || primaryTx() == undefined) && name().isValid == "true"}><button class="button tagCount" onClick={setPrimaryAddress}>Set Primary</button></Match>
+                  <Match when={(isController() || name().owner == store().userAddress) && (name().primary !== undefined || primaryTx() !== undefined)}><button class="button tagCount" onClick={unsetPrimaryAddress}>Unset Primary</button></Match>
+              </Switch>
+
               </div>
             <hr class="solid"/>
             <h5 class="title is-5 wh">
               Controller
             </h5>
             <div class="spaceRow">
-
-              {/* SHOW ALL CONTROLLERS */}
-
             <input  
               class="input dark-bg wh mw" type="text" placeholder="No controller set"
-                    onInput={(e) => {
-                      setController(e.target.value)
-                    }}/>
-              <Show
-                when={store().userAddress == name().owner}>
-                  <button class="button tagCount">Set Controller</button>
-              </Show>
+              disabled={!(name().owner == store().userAddress)}
+              value={name().controller || "Controller is not set"}
+              onInput={(e) => {
+                setControllerState(e.target.value)
+              }}/>
+
+              <Switch >
+                  <Match when={name().owner == store().userAddress && (name().controller == undefined || controllerTx() == undefined) && name().isValid == "true"}><button class="button tagCount" onClick={setControllerAddress}>Set Controller</button></Match>
+                  <Match when={name().owner == store().userAddress && (name().controller !== undefined || controllerTx() == !undefined)}><button class="button tagCount" onClick={unsetControllerAddress}>Unset Controller</button></Match>
+              </Switch>
               </div>
             
 

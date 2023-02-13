@@ -1,7 +1,7 @@
 import styles from '../App.module.css';
 import * as THREE from 'three';
 import { createSignal, Switch, Match, children, createEffect, mergeProps, Show, onMount, onCleanup } from 'solid-js';
-import { nameLookup, handleEthers, getWrappedNames, getUnwrappedNames, getAllNames } from '../utils/nameUtils';
+import { getName, handleEthers, getWrappedNames, getUnwrappedNames, getAllNames } from '../utils/nameUtils';
 import { useGlobalContext } from '../GlobalContext/store';
 
 const Profile = () =>{
@@ -12,6 +12,7 @@ const Profile = () =>{
     const [namesCount, setNamesCount] = createSignal(0);
     const [wrappedCount, setWrappedCount] = createSignal(0);
     const [loading, setLoading] = createSignal(false);
+    const [primaryName, setPrimaryName] = createSignal('primary not set');
   
     const { store, setStore } = useGlobalContext();
 
@@ -54,6 +55,13 @@ const Profile = () =>{
         const prev = store()
         setRouteTo(prev.lastRoute)
       }
+
+    const handlePrimary = async (address)=>{
+        var primary = await getName(address);
+        if(primary){
+            setPrimaryName(primary)
+        }
+    }
   
   
 
@@ -77,7 +85,7 @@ const Profile = () =>{
                         <div class="box lg profileCard">
                     <img class="profileL" src="https://linagee.vision/LNR_L_Icon_White.svg" width="40" height="12"/>
                         <h3 class="title is-3 wh profilePrimary">
-                            primary.og
+                            {primaryName}
                         </h3>
                         </div>
                     </div>
@@ -86,7 +94,7 @@ const Profile = () =>{
                 <div class="container p-4 pt-8 has-text-left">
                 <div class="is-hidden-mobile spacer"></div>
                         <h4 class="title is-4 has-light-text wh">
-                            primary.og
+                            {primaryName}
                         </h4>
                         <h6 class="subtitle is-6 has-light-text wh">
                             {store().profileAddress}
