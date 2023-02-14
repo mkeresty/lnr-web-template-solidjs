@@ -17,8 +17,8 @@ const Profile = () =>{
     const { store, setStore } = useGlobalContext();
 
     const handleCount = (array)=>{
-        const id = "unwrapped";
-        const count = array.filter((obj) => obj.id === id).length;
+        const id = "wrapped";
+        var count = array.filter((obj) => obj.status === id).length;
         setWrappedCount(count);
     }
   
@@ -131,7 +131,7 @@ const Profile = () =>{
                         </tr>
                     </thead>
                     <tbody>
-            <For each={names()}>{(item, i) =>
+                    <For each={names()}>{(item, i) =>
                         <tr onClick={()=>handleDomain(item)} class="tableRow" id={item.bytecode}>
                         <th   class="wh">{item.name}</th>
                         <th class="wh">{item.status}</th>

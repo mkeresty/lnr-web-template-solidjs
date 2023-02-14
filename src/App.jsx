@@ -6,7 +6,7 @@ import Profile from './pages/Profile';
 import Mint from './pages/Mint';
 import Header from './components/Header';
 import Home from './pages/Home';
-import Search from './pages/SearchOld';
+import Search from './pages/Search';
 import Domain from './pages/Domain';
 import { useGlobalContext } from './GlobalContext/store';
 

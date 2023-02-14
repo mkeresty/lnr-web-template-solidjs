@@ -17,7 +17,7 @@ const Header = () => {
       var name = await getName(walletAddress);
       const prev = store();
       if(walletAddress){
-        var toSet = {userAddress: walletAddress, userPrimary: name, profileAddress: walletAddress};
+        var toSet = {userAddress: walletAddress, userPrimary: name};
         setStore({...prev, ...toSet});
         setAddress(walletAddress.slice(0,4)+'...'+walletAddress.slice(-4));
       }
@@ -34,9 +34,13 @@ const Header = () => {
 
   
   
-    const setRouteTo = (route) => {
+    const setRouteTo = async (route) => {
         const prev = store()
         var toSet = {route: route}
+        if(route == "Profile"){
+          var walletAddress = await og.signer.getAddress();
+          var toSet = {route: route, profileAddress: walletAddress}
+        }
         setStore({...prev, ...toSet});
     }
 

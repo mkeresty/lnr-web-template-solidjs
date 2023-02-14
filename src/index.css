@@ -194,3 +194,21 @@ body.dark {
 .mw {
   max-width: 70%;
 }
+
+.sm {
+  width: 50%;
+}
+
+.cn {
+  justify-content: center;
+  align-items: center;
+}
+
+.pop{
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translate(-50%, -50%);
+  margin: 0 auto;
+  z-index: 1000;
+}

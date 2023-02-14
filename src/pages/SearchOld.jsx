@@ -6,7 +6,7 @@ import NameBox from '../components/NameInfo';
 import AddressBox from '../components/AddressInfo';
 import { nameLookup, handleEthers } from '../utils/nameUtils';
 
-const Search = () =>{
+const SearchOld = () =>{
     var og = window.parent.og;
     const [name, setName] = createSignal('');
     const [showModal, setShowModal] = createSignal(false);
@@ -110,7 +110,7 @@ const Search = () =>{
           <div class="block has-text-centered">
               <h3 class="title is-3 has-text-light">Search</h3>
                   <input  
-                    class="input mb-3 mt-3" type="text" placeholder="name.og or address"
+                    class="input dark-bg wh mw" type="text" placeholder="name.og or address"
                     onInput={(e) => {
                         setShowAddressModal(false); 
                         setShowModal(false); 
@@ -161,4 +161,4 @@ const Search = () =>{
     )
 }
 
-export default Search;
+export default SearchOld;

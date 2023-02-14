@@ -19,12 +19,12 @@ export default function MessageBox(props){
     <Show
     when={props.type == "success"}
     fallback={
-        <div class="box errorBox is-centered animated fadeOut">
+        <div class="box errorBox is-centered animated fadeOut pop">
        {props.message}
     </div>
     }
   >
-    <div class="box successBox is-centered animated fadeOut">
+    <div class="box successBox is-centered animated fadeOut pop">
     {props.message}
     </div>
     </Show>

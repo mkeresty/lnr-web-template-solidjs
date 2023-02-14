@@ -5,7 +5,7 @@ export async function nameLookup(address){
     try{
         var name = await og.lnr.lookupAddress(address);
     } catch(error){
-        console.log(error)
+        //console.log(error)
     }
     return(name);
 }
@@ -16,16 +16,16 @@ export function isValidBytes(bytes){
     var name = (og.lnr.bytes32ToString(bytes)).toString();
     try{
         var validName = og.lnr.isValidDomain(name+'.og'); 
-        console.log(validName[1])
-        console.log(og.lnr.domainToBytes32(validName[1]));
-        console.log(bytes)
+        //console.log(validName[1])
+        //console.log(og.lnr.domainToBytes32(validName[1]));
+        //console.log(bytes)
         if (og.lnr.domainToBytes32(validName[1]) === bytes){
             var isValid = true
         }
-        console.log("valid", isValid)
+        //console.log("valid", isValid)
     }
     catch(e){
-        console.log(e)
+        //console.log(e)
     }
     return(isValid)
 }
@@ -34,22 +34,22 @@ export async function resolveOrReturn(nameAddress){
     var og = window.parent.og;
     var name = false;
     if(og.ethers.utils.isAddress(nameAddress) == true){
-        console.log("true address", nameAddress)
+        //console.log("true address", nameAddress)
         return(nameAddress)
     }
     else{
-        console.log("why in here")
+        //console.log("why in here")
             try{
                 var tempname = await og.lnr.resolveName(nameAddress);
-                console.log(tempname);
+                //console.log(tempname);
                 if(og.ethers.utils.isAddress(tempname)){
                     var name = tempname;
                 }
             } catch(error){
-                console.log(error)
+                //console.log(error)
             }
 
-    console.log("returning", name)
+    //console.log("returning", name)
     return(name)
 };
 }
@@ -61,18 +61,21 @@ export async function resolve(nameAddress){
         return(name)
     }
     else{
-        console.log("why in here")
+        //console.log("why in here")
             try{
                 var tempname = await og.lnr.resolveName(nameAddress);
-                console.log(tempname);
+                //console.log(tempname);
                 if(og.ethers.utils.isAddress(tempname)){
                     var name = tempname;
                 }
+                if(tempname == null){
+                    var name = tempname;
+                }
             } catch(error){
-                console.log(error)
+                //console.log(error)
             }
 
-    console.log("returning", name)
+    //console.log("returning", name)
     return(name)
 };
 }
@@ -85,7 +88,7 @@ export async function getName(address){
             var name = await og.lnr.lookupAddress(address)
         }
         catch(e){
-            //console.log(e)
+            ////console.log(e)
         }
         return(name)
     }
@@ -100,7 +103,7 @@ export async function isControllerFun(name, address){
             var res = await og.lnr.verifyIsNameOwner(name, address)
         }
         catch(e){
-            //console.log(e)
+            ////console.log(e)
         }
         return(res)
     }
@@ -141,7 +144,7 @@ export async function handleEthers(fn){
         var signature = await fn();
         return(signature)
     } catch(error){
-        console.log(error)
+        //console.log(error)
         return(false)
     }
 
@@ -150,15 +153,15 @@ export async function handleEthers(fn){
 export async function getAllNames(nameAddress){
     var og = window.parent.og;
     var address = await resolveOrReturn(nameAddress);
-    console.log("address", address)
+    //console.log("address", address)
     if(address == false){
         return
     }
-    console.log("getting")
+    //console.log("getting")
     var unwrapped = await getUnwrappedNames(address);
-    console.log(unwrapped)
+    //console.log(unwrapped)
     var wrapped = await getWrappedNames(address);
-    console.log(wrapped)
+    //console.log(wrapped)
 
     return(unwrapped.concat(wrapped))
 
@@ -184,12 +187,23 @@ export async function getWrappedNames(address){
     const contract = new ethers.Contract(wrapperAddress, abi, provider);
 
     const balance = (await contract.balanceOf(address)).toString(); //HERE
+    console.log("balance is", balance)
     const tokenids =[];
+    console.log("tokenis", tokenids)
     if(balance > 0){
         for(let i = 0; i < balance; i++){
             const curId = (await contract.tokenOfOwnerByIndex(address, i)).toString(); //HERE
+            console.log("curid is", curId)
             const curBytes = (await contract.idToName(curId)).toString();  //HERE
-            const curName = og.lnr.bytes32ToString(curBytes);
+            var curName = undefined;
+            try{
+                var curName = (og.lnr.bytes32ToString(curBytes)).toString();
+                console.log(curName, "cyrr")
+            }
+            catch(e){
+                var curName = ((gData[i]).domaintoUtf8).toString();
+            }
+            //console.log(curName);
             var primary = await getPrimaryAddress(curName + '.og');
             var controller = await getController(curBytes);
 
@@ -198,7 +212,7 @@ export async function getWrappedNames(address){
                 var isValid = og.lnr.isNormalizedBytes(curBytes)
             } 
             catch(e){
-                console.log(e)
+                //console.log(e)
             }
             tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "wrapped", owner: address, primary: primary, controller: controller});
         }
@@ -211,15 +225,25 @@ export async function getWrappedNames(address){
 
 export async function getUnwrappedNames(address){
     var og = window.parent.og;
-    var tokens = await theGraph(address);
+    var gData = await loopGraph(address);
+    //console.log("tokensunwrapped", gData)
     const tokenids =[];
-    if(tokens && tokens['data']['domains']){
-        const gData = tokens['data']['domains'];
+    if(gData && gData.length > 0){
+
+        
         for(let i = 0; i < gData.length; i++){
+            //console.log(gData[i])
             const curId = undefined;
             const curBytes = ((gData[i]).domainBytecode).toString();
-            console.log(curBytes)
-            const curName = (og.lnr.bytes32ToString(curBytes)).toString();
+            //console.log(curBytes)
+            var curName = undefined;
+            try{
+                var curName = (og.lnr.bytes32ToString(curBytes)).toString();
+            }
+            catch(e){
+                var curName = ((gData[i]).domaintoUtf8)
+            }
+            //console.log(curName);
             var primary = await getPrimaryAddress(curName + '.og');
             var controller = await getController(curBytes);
 
@@ -228,11 +252,8 @@ export async function getUnwrappedNames(address){
                 var isValid = og.lnr.isNormalizedBytes(curBytes)
             } 
             catch(e){
-                console.log(e)
+                //console.log(e)
             }
-
-
-            //Remove below--------------------------
             tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "unwrapped", owner: address, primary: primary, controller: controller});
 
            
@@ -243,23 +264,122 @@ export async function getUnwrappedNames(address){
     return(tokenids)
 }
 
-async function theGraph(address){
+export async function searchUnwrappedNames(name){
+    var og = window.parent.og;
+    var search = await searchGraph(name);
+    //console.log("tokensunwrapped", gData)
+    const tokenids =[];
+    if(search && search['data']['domains'] ){
+        var gData = search['data']['domains'];
+        for(let i = 0; i < gData.length; i++){
+            //console.log(gData[i])
+            const curId = undefined;
+            const curBytes = ((gData[i]).domainBytecode).toString();
+            var address = undefined;
+            try{
+                lnres = await og.lnr.linageeContract.owner(curBytes);
+                if(lnres !== "0x0000000000000000000000000000000000000000" && og.ethers.utils.isAddress(lnres)){
+                    var address = lnres;
+                }
+            } catch(e){
+                console.log(e)
+            }
+
+            //console.log(curBytes)
+            var curName = undefined;
+            try{
+                var curName = (og.lnr.bytes32ToString(curBytes)).toString();
+            }
+            catch(e){
+                var curName = ((gData[i]).domaintoUtf8)
+            }
+            //console.log(curName);
+            var primary = await getPrimaryAddress(curName + '.og');
+            var controller = await getController(curBytes);
+
+            var isValid = false;
+            try{
+                var isValid = og.lnr.isNormalizedBytes(curBytes)
+            } 
+            catch(e){
+                //console.log(e)
+            }
+            tokenids.push({bytes: curBytes, name: curName+'.og', isValid: isValid.toString(), tokenId: curId, status: "unwrapped", owner: address, primary: primary, controller: controller});
+
+           
+        }
+        return(tokenids)
+    }
+
+    return(tokenids)
+}
+
+async function loopGraph(address){
+    const gdata=[]
+    var offset = 0;
+    for ( let i = 0; i>=0; i++) {
+        var tokens = await theGraph(address, offset);
+        console.log(i*100)
+        if(tokens && tokens.errors == undefined){
+            var resp = tokens['data']['domains'] 
+            if(resp.length < 1){
+                return(gdata)
+            }
+            console.log(resp)
+            console.log('resppp', resp.slice(-1)[0].registerIndex)
+            var offset = resp.slice(-1)[0].registerIndex
+            console.log(offset)
+            gdata.push(...resp);
+           //console.log(gdata)
+        } else{
+            return(gdata)
+        }
+    }
+    return(gdata)
+
+}
+
+async function theGraph(address, offset){
+
     const resp = await fetch(`https://api.studio.thegraph.com/query/42000/linagee/v0.0.1`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: `
       query {
-        domains(where: {owner_contains_nocase: "${address}"}) {
+        domains(where: {owner_contains_nocase: "${address}", registerIndex_gt: ${offset}}) {
             domainUtf8,
-            domainBytecode
+            domainBytecode,
+            registerIndex
           }
         
     }`
       }),
     }).then((res)=>{
-        return(res.json())})
+        return(res.json())
+    })
 
     return(resp)
 }
 
+async function searchGraph(name){
+    const resp = await fetch(`https://api.studio.thegraph.com/query/42000/linagee/v0.0.1`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `
+        query {
+          domains(where: {domainUtf8_contains_nocase: "${name}"}) {
+              domainUtf8,
+              domainBytecode,
+              registerIndex
+            }
+          
+      }`
+        }),
+      }).then((res)=>{
+          return(res.json())
+      })
+  
+      return(resp)
+  }
