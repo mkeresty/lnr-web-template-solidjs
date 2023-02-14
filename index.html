@@ -1,5 +1,6 @@
-<html>
-<head>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <!-- jquery -->
@@ -17,37 +18,13 @@
       }
     </script>
     
-
-
-
+    <link rel="shortcut icon" type="image/ico" href="/src/assets/favicon.ico" />
+    <title>Title</title>
   </head>
+  <body>
+    <noscript>no-js</noscript>
+    <div id="root"></div>
 
-    <body class="gradient">
-      <section class="container">
-
-        <div class="columns is-centered">
-          <div class="column is-6">
-              <div>
-                <svg height="200" width="200">
-                  <circle cx="100" cy="100" r="70" stroke="black" stroke-width="3" fill="grey" />
-                </svg>
-              </div>
-              <div class="buttons are-medium">
-                <button class="button is-fullwidth">Bad <span class="material-icons">mood_bad</span></button>
-              </div>
-              <div class="buttons are-medium">
-                <button class="button is-fullwidth">Link <span class="material-icons">link</span></button>
-              </div>
-              <div class="buttons are-medium">
-                <button class="button is-fullwidth">Tree <span class="material-icons">nature</span></button>
-              </div>
-              <div class="buttons are-medium">
-                <button id="test" class="button is-fullwidth">Clone</button>
-              </div>
-
-          </div>
-        </div>
-      </section>
-    </body>
-
+    <script src="/src/index.jsx" type="module"></script>
+  </body>
 </html>
