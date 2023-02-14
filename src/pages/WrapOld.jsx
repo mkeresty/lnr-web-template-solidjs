@@ -1,18 +1,21 @@
 import styles from '../App.module.css';
 import * as THREE from 'three';
-import { createSignal, Switch, Match } from 'solid-js';
+import { createSignal, Switch, Match, onMount } from 'solid-js';
 import MessageBox from '../components/MessageBox';
 import { nameLookup, resolveOrReturn, handleEthers } from '../utils/nameUtils';
+import { useGlobalContext } from '../GlobalContext/store';
 
 const Wrap = () =>{
     var og = window.parent.og;
     const [name, setName] = createSignal('');
+    const [nameStatus, setNameStatus] = createSignal('');
     const [showModal, setShowModal] = createSignal(false);
     const [modalType, setModalType] = createSignal('nothisstart');
     const [modalName, setModalName] = createSignal('Lorem ipsum');
     const [modalOwner, setModalOwner] = createSignal('Lorem ipsum');
     const [modalSignature, setModalSignature] = createSignal('Lorem ipsum');
     const [modalMessage, setModalMessage] = createSignal('Lorem ipsum');
+    const { store, setStore } = useGlobalContext();
 
     async function createWrapper(){
       const currentName = name();
@@ -162,40 +165,27 @@ const Wrap = () =>{
       setShowModal(true);
     }
 
+    onMount(async () => {
+      setName(store().domain.name);
+      setNameStatus(store().domain.status)
+    });
+  
 
 
   
   
     return(
-      <div class="page">
-  <br/>
-  <div class="columns is-mobile">  
-  
-  <div class="column is-10 is-offset-1 pb-10">
-          <div class="card lg has-text-centered">
-          <br/>
-          <p class="title has-text-light">
-          This entire site is on chain
-          </p>
-          <br/>
-          </div>
-      </div>
-      </div>
-  <div class="columns is-mobile">   
-  
-      <div class="column is-half is-offset-one-quarter mt-6">
+
           <div class="block has-text-centered">
-              <h3 class="title is-3 has-text-light">Wrap</h3>
-                  <input  
-                    class="input mt-3 mb-3" type="text" placeholder="name"
-                    onInput={(e) => {
-                      setShowModal(false); 
-                      setName(e.target.value)
-                    }}/>
-                  <button class="button is-outlined m-3" onClick={createWrapper}>Create Wrapper</button>
-                  <button class="button is-outlined m-3" onClick={transferToWrapper}>Transfer to Wrapper</button>
-                  <button class="button is-outlined m-3" onClick={wrapName}>Wrap</button>
-                  <button class="button is-outlined m-3" onClick={unwrapName}>Unwrap</button>
+              <h4 class="title is-3 has-text-light">{name}</h4>
+                    <Show
+                    when={nameStatus() == "unwrapped"}
+                    fallback={<button class="button is-outlined m-3" onClick={unwrapName}>Unwrap</button>}
+                    >
+                      <button class="button is-outlined m-3" onClick={createWrapper}>Create Wrapper</button>
+                      <button class="button is-outlined m-3" onClick={transferToWrapper}>Transfer to Wrapper</button>
+                      <button class="button is-outlined m-3" onClick={wrapName}>Wrap</button>
+                    </Show>
                   <Show when={showModal()}>
                     <MessageBox
                     type={modalType()}
@@ -210,9 +200,7 @@ const Wrap = () =>{
                     </MessageBox>
                 </Show>
           </div>
-      </div>
-  </div>
-  </div>
+
     )
   }
   

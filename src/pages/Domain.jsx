@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { createSignal, Switch, Match, children, createEffect, mergeProps, Show, onMount } from 'solid-js';
 import { isControllerFun, resolveOrReturn } from '../utils/nameUtils';
 import { useGlobalContext } from '../GlobalContext/store';
+import Wrap from './WrapOld';
 
 const Domain = () =>{
 
@@ -12,6 +13,7 @@ const Domain = () =>{
     const [loading, setLoading] = createSignal(false);
     const [transferAddress, setTransferAddress] = createSignal();
     const [transferModal, setTransferModal] = createSignal(false);
+    const [wrapperModal, setWrapperModal] = createSignal(false);
     const [isController, setIsController] = createSignal(false);
     const [controllerState, setControllerState] = createSignal();
 
@@ -159,7 +161,7 @@ const Domain = () =>{
 
       return(
         <div class="page"> 
-                    <div classList={{"modal": true , "is-active":transferModal()}}>   
+                <div classList={{"modal": true , "is-active":transferModal()}}>   
                   <div class="box dark-bg">
                   <h3 class="title is-3 wh profilePrimary">
                             {name().name}
@@ -179,14 +181,24 @@ const Domain = () =>{
                   </div>
 
 
-<button class="modal-close is-large" aria-label="close"></button>
-</div>
+                <button class="modal-close is-large" aria-label="close"></button>
+                </div>
+                <div classList={{"modal": true , "is-active":wrapperModal()}}>   
+                  <div class="box dark-bg">
+                    <Wrap />
+                    <button class="button tagCount is-pulled-right" onClick={()=>setWrapperModal(false)}>close</button>
+                  </div>
+                  </div>
         <div class="spaceRow ml-4">
           <button class="button tagCount is-pulled-left" onClick={goBack}>back</button>
           <Show
             when={store().userAddress == name().owner}>
               <button class="button tagCount is-pulled-right" onClick={()=>setTransferModal(true)}>transfer</button>
           </Show>
+          <Switch >
+                  <Match when={store().userAddress == name().owner && name().status == "unwrapped"}><button class="button tagCount" onClick={()=>setWrapperModal(true)}>Wrap</button></Match>
+                  <Match when={store().userAddress == name().owner && name().status == "wrapped"}><button class="button tagCount" onClick={()=>setWrapperModal(true)}>Unwrap</button></Match>
+              </Switch>
         </div>
             <div class="columns" >
                 <div class="column ">
@@ -259,17 +271,30 @@ const Domain = () =>{
               Controller
             </h5>
             <div class="spaceRow">
-            <input  
-              class="input dark-bg wh mw" type="text" placeholder="No controller set"
-              disabled={!(name().owner == store().userAddress)}
-              value={name().controller || "Controller is not set"}
-              onInput={(e) => {
-                setControllerState(e.target.value)
-              }}/>
 
               <Switch >
-                  <Match when={name().owner == store().userAddress && (name().controller == undefined || controllerTx() == undefined) && name().isValid == "true"}><button class="button tagCount" onClick={setControllerAddress}>Set Controller</button></Match>
-                  <Match when={name().owner == store().userAddress && (name().controller !== undefined || controllerTx() == !undefined)}><button class="button tagCount" onClick={unsetControllerAddress}>Unset Controller</button></Match>
+                  <Match when={name().owner == store().userAddress && (name().controller == undefined || controllerTx() == undefined) && name().isValid == "true"}>
+                  <input  
+                    class="input dark-bg wh mw" type="text" placeholder="No controller set"
+                    disabled={!(name().owner == store().userAddress)}
+                    value={name().controller || "Controller is not set"}
+                    onInput={(e) => {
+                      setControllerState(e.target.value)
+                    }}/>
+
+                    <button class="button tagCount" onClick={setControllerAddress}>Set Controller</button>
+                    </Match>
+                  <Match when={name().owner == store().userAddress && (name().controller !== undefined || controllerTx() == !undefined)}>
+                  <h6 class="subtitle is-6 wh">
+                    {name().controller || controllerTx()}
+                      </h6> 
+                    <button class="button tagCount" onClick={unsetControllerAddress}>Unset Controller</button>
+                    </Match>
+                    <Match when={name().owner !== store().userAddress}>
+                  <h6 class="subtitle is-6 wh">
+                    {name().controller || controllerTx() || "Controller is not set"}
+                      </h6> 
+                    </Match>
               </Switch>
               </div>
             

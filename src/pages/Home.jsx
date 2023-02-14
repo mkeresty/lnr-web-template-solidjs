@@ -21,18 +21,6 @@ const Home = () =>{
               </div>
             </div>
           </div>
-          <div class="is-flex is-flex-direction-row m-3">
-          <a role="button" id="burger" class="navbar-burger mr-3">
-    <span aria-hidden="true"></span>
-    <span aria-hidden="true"></span>
-    <span aria-hidden="true"></span>
-</a>
-            <input  
-                      class="input" type="text" placeholder="address"
-/>  
-            <button class="button is-outlined ml-3" >search</button>
-          </div>
-
       </div>
       )
 }

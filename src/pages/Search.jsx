@@ -57,7 +57,10 @@ const Search = () => {
   const searchNames = async()=>{
     var res = await searchUnwrappedNames(name());
     if(res.length > 0){
-        setNames(res)
+        setNames(res);
+        const prev = store()
+        var toSet = {searchData: {name: name(), names: names()}}
+        setStore({...prev, ...toSet});
     }
   }
 
@@ -72,11 +75,12 @@ const Search = () => {
 }
 
   
-  const Test = () => {
-    const prev = store()
-    var toSet = {domain: "howdy"}
-    setStore({...prev, ...toSet});
-}
+onMount(() => {
+    if (store().searchData) {
+        setNames(store().searchData.names);
+        setName(store().searchData.name);
+    }
+  });   
 
 
 

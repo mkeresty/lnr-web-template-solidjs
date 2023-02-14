@@ -2,6 +2,10 @@
   color: white !important;
 }
 
+::-webkit-input-disabled {
+  background-color: #1f1f1f !important;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

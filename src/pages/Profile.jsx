@@ -23,13 +23,22 @@ const Profile = () =>{
     }
   
     const getNames = async () =>{
-      if((store().profileAddress).length > 0){
+      if(store().personData && store().profileAddress == store().personData.address){
+        setNames(store().personData.names);
+        setNamesCount(store().personData.count)
+        setWrappedCount(store().personData.wrappedCount)
+        console.log("found in store")
+      }  
+      else if((store().profileAddress).length > 0){
         var repNames = await getAllNames((store().profileAddress));
         console.log('reo', repNames)
         if(repNames.length > 1){
           setNames(repNames);
           setNamesCount(repNames.length);
           handleCount(repNames);
+          const prev = store()
+          var toSet = {personData: {address: store().profileAddress, names: names(), count: namesCount(), wrappedCount: wrappedCount()}}
+          setStore({...prev, ...toSet});
           return
         }
         return
