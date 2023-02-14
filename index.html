@@ -1,262 +1,53 @@
 <html>
 <head>
-  <meta charset="UTF-8">
-  <script src="https://cdn.jsdelivr.net/npm/csso@5.0.5/dist/csso.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/terser/dist/bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier/4.0.0/htmlminifier.min.js" integrity="sha512-4iIsNBIgG/kZCukIg4oZDZe1ZBRUFfklAGUVpbck6xqjd+tBeX2WqtZChk/HrERHqEBky20H+UqUabF9whH+cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" integrity="sha512-FDcVY+g7vc5CXANbrTSg1K5qLyriCsGDYCE02Li1tXEYdNQPvLPHNE+rT2Mjei8N7fZbe0WLhw27j2SrGRpdMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="lnr-ethers-1.1.0.js"></script>
-  <script src="lnr-web-0.1.1.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <!-- jquery -->
+    <script src="derp://0xae474c271886540dacae99f9f0985a79c6ec9b685139f38927f61f564133972b/0x7cec8efcc600aaa53decab9106bd97fcdec817a42fd0650c2f74531e5698153a"></script>
+    <!-- bulma -->
+    <link rel="stylesheet" href="derp://0x9e403fd1d24d60bf696c1546ff628ac20379c2fb1697295f896c4dce915a5d71/0xaed9ac8797981170d20879074b6b58c63d12092ad41f47eabd39896814de5197">
+    <!-- Material Icons-->
+    <link rel="stylesheet" href="derp://0x4e37f259e0eb402e3864ba47b8739ac7d34607681655e2c274c350479d58d9f9/0x37589b02a0a8baecdf3115c0324eafc284d4e7f04be56f4d359d398a47208e46">
 
-  <script>
-    const lnrWebAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"assetHash","type":"bytes32"},{"indexed":false,"internalType":"string","name":"assetName","type":"string"},{"indexed":false,"internalType":"string","name":"assetDescription","type":"string"}],"name":"NewAsset","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"domain","type":"bytes32"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"NewWebsite","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[],"name":"lnrResolverAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"lnrWebsites","outputs":[{"internalType":"bool","name":"derp","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"}],"name":"getWebsite","outputs":[{"components":[{"internalType":"bool","name":"derp","type":"bool"},{"internalType":"string[]","name":"linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"pageTxHashArray","type":"bytes32[]"}],"internalType":"structLNR_WEB_V0.Website","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_domain","type":"bytes32"},{"internalType":"string","name":"_description","type":"string"},{"internalType":"string[]","name":"_linkArray","type":"string[]"},{"internalType":"bytes32[]","name":"_pageHashArray","type":"bytes32[]"},{"internalType":"bytes32[]","name":"_pageTxHashArray","type":"bytes32[]"}],"name":"updateWebsite","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"_assetHash","type":"bytes32[]"},{"internalType":"string[]","name":"_assetName","type":"string[]"},{"internalType":"string[]","name":"_assetType","type":"string[]"},{"internalType":"string[]","name":"_assetDescription","type":"string[]"},{"internalType":"bytes[]","name":"_assetData","type":"bytes[]"},{"internalType":"bool[]","name":"_zip","type":"bool[]"}],"name":"uploadAssets","outputs":[],"stateMutability":"nonpayable","type":"function"}];
-
-    let lnrWebAddress = "0x9B1558c57Bf2B2686f2E024252E84BA746eBa665";// sepolia  //"0xeA367344Ed8DEb3DE732880b7EE8aDCa281935E0"; // local
-    let lnrWebContract;
-
-    var htmlMinify = require('html-minifier').minify;
-    let provider = new ethers.providers.Web3Provider(window.ethereum);
-    let lnr;
-    let lnrWeb;
-    let signer;
-
-    let og = {
-      ethers: ethers,
-      signer: null,
-      provider: null,
-      lnr: null
-    }
-
-    async function connectWallet(){
-      await provider.send("eth_requestAccounts", []);
-      signer = provider.getSigner();
-      lnr = new LNR(ethers, signer);
-      lnrWeb = new LNR_WEB(ethers, provider, signer);
-      let wallet = await signer.getAddress();
-      lnrWebContract = new ethers.Contract(lnrWebAddress, lnrWebAbi, signer);
-      document.getElementById('eth_login_button').innerHTML = "Wallet:" + wallet.substring(0,6) + "..." + wallet.slice(wallet.length-4);
-      og.signer = signer;
-      og.provider = provider;
-      og.lnr = lnr;
-      window.og = og;
-      document.getElementById('web3Buttons').style.display = "inline-block";
-    }
-
-    async function uploadNewFile(){
-      let formData = new FormData(document.getElementById("uploadNewFileForm"));
-      let upload = await lnrWeb.uploadNewFile(formData.get('fileName'),
-                                              formData.get('fileType'),
-                                              formData.get('fileDesc'),
-                                              formData.get('fileData') );
-
-      let uncompressedKeccak256 = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(formData.get('fileData')));
-      console.log("Upload Asset Result:")
-      console.log(upload);
-      console.log('txHash', upload.hash);
-      console.log('dataHash', uncompressedKeccak256);
-    }
-
-    async function uploadLibrary(){
-      let formData = new FormData(document.getElementById("uploadLibrary"));
-      let libraryText = await fetch(formData.get('libraryLink'));
-      libraryText = await libraryText.text();
-      console.log(libraryText.length);
-      let upload = await lnrWeb.uploadNewFile(formData.get('libraryName'),
-                                              formData.get('libraryType'),
-                                              formData.get('libraryDesc'),
-                                              libraryText );
-
-      let uncompressedKeccak256 = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(libraryText));
-      console.log("Upload Library Result:")
-      console.log(upload);
-      console.log('txHash', upload.hash);
-      console.log('dataHash', uncompressedKeccak256);
-      console.log("Create your script/css tag, and use the derp:// link below as the href");
-      console.log('derp://' + upload.hash + "/" + uncompressedKeccak256);
-    }
-
-    async function updateWebsite(){
-      let formData = new FormData(document.getElementById("updateWebsite"));
-      let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
-      let siteDescription = formData.get("websiteDesc");
-      let siteLinks = [formData.get("websiteLinks")];
-      let siteDataHashes = [formData.get("websiteDataHashes")];
-      let siteTxHashes = [formData.get("websiteTxHashes")];
-
-      let update = await lnrWeb.updateWebsite(domainAsBytes32,
-                                                      siteDescription,
-                                                      siteLinks,
-                                                      siteDataHashes,
-                                                      siteTxHashes
-                                                      );
-      console.log(update);
-    }
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "derp://0x533630dc74113543b0b3c45d922e80c6382fccf23f6aad3d459d8f3d1da1eed6/0x79db9d483a6155104d35f9871a2ad4fc322115a42ee09dea85fc3e2ed75660cf"
+        }
+      }
+    </script>
+    
 
 
-    async function viewWebsite(){
-      closeAllMenus();
-      let formData = new FormData(document.getElementById("viewWebsite"));
-      let domainAsBytes32 = lnr.domainToBytes32(formData.get("websiteName"));
-      let website = await lnrWeb.getWebsite(domainAsBytes32);
-      console.log(website);
-      document.getElementById('chain_frame').srcdoc = website.finalData;
-    }
 
-    async function generateWebsite(viewIt){
-      // this has all the code directly embedded into the page
-      let siteCSS = await fetch('website/style.css');
-      let siteJS = await fetch('website/index.js');
-      let siteHTML = await fetch('website/index.html');
+  </head>
 
-      siteCSS = await siteCSS.text();
-      siteJS = await siteJS.text();
-      siteHTML = await siteHTML.text();
+    <body class="gradient">
+      <section class="container">
 
-      siteCSS = csso.minify(siteCSS).css;
-      var minJS = await Terser.minify(siteJS,{
-        compress: true,
-      });
-      siteJS = minJS.code;
-      siteHTML = htmlMinify(siteHTML);
+        <div class="columns is-centered">
+          <div class="column is-6">
+              <div>
+                <svg height="200" width="200">
+                  <circle cx="100" cy="100" r="70" stroke="black" stroke-width="3" fill="grey" />
+                </svg>
+              </div>
+              <div class="buttons are-medium">
+                <button class="button is-fullwidth">Bad <span class="material-icons">mood_bad</span></button>
+              </div>
+              <div class="buttons are-medium">
+                <button class="button is-fullwidth">Link <span class="material-icons">link</span></button>
+              </div>
+              <div class="buttons are-medium">
+                <button class="button is-fullwidth">Tree <span class="material-icons">nature</span></button>
+              </div>
+              <div class="buttons are-medium">
+                <button id="test" class="button is-fullwidth">Clone</button>
+              </div>
 
+          </div>
+        </div>
+      </section>
+    </body>
 
-      let outputToChainArray = [];
-      let websiteDisplayArray = [];
-      siteHTML = await lnrWeb.replaceCSS(siteHTML, viewIt);
-      siteHTML = await lnrWeb.replaceJS(siteHTML, viewIt);
-      let siteSplit = siteHTML.split("</head>");
-
-      websiteDisplayArray.push(siteSplit[0]);
-      websiteDisplayArray.push("<style>" + siteCSS + "</style>");
-      websiteDisplayArray.push("<script type=\"module\">" + siteJS+ "<" + "/script>");
-      websiteDisplayArray.push("</head>");
-      websiteDisplayArray.push(siteSplit[1]);
-      return htmlMinify(websiteDisplayArray.join("\n"),{collapseWhitespace: true});
-
-    }
-
-    async function loadWebsite(){
-      closeAllMenus();
-      let viewableWebsite = await generateWebsite(true);
-      let chainUploadWebsite = await generateWebsite(false);
-      document.getElementById('chain_frame').srcdoc = viewableWebsite;
-
-      const byteSize = function(str){return (new Blob([str]).size)};
-      console.log("Uncompressed: " + byteSize(viewableWebsite)/1000  + "kb")
-      //console.log(compressedPage);
-      document.getElementById('fileData').value = chainUploadWebsite;
-      compressedPage = lnrWeb.compressData(chainUploadWebsite);
-      //console.log(compressedPage);
-      console.log("Compressed: " + byteSize(compressedPage)/1000  + "kb")
-      document.getElementById('uploadNewFileDiv').style.display = "block";
-      document.getElementById('fileDataLabel').innerHTML = "File Data (updated @ " + (new Date().getTime()) + ")";
-
-    }
-
-    function closeAllMenus(){
-      closeUpdateWebsite();
-      closeUploadLibrary();
-      closeUploadDiv();
-    }
-
-    function openUpdateWebsite(){
-      closeAllMenus();
-      document.getElementById('updateWebsiteDiv').style.display = "block";
-    }
-
-    function openUploadLibrary(){
-      closeAllMenus();
-      document.getElementById('uploadLibraryDiv').style.display = "block";
-    }
-
-    function closeUpdateWebsite(){
-      document.getElementById('updateWebsiteDiv').style.display = "none";
-    }
-
-    function closeUploadDiv(){
-      document.getElementById('uploadNewFileDiv').style.display = "none";
-    }
-
-    function closeUploadLibrary(){
-      document.getElementById('uploadLibraryDiv').style.display = "none";
-    }
-
-  </script>
-</head>
-
-  <body>
-    <div style="position:fixed; bottom: 0%; left: 0;">
-      <div id="uploadNewFileDiv" style="display:none;background:white;padding:1rem;">
-        <form id="uploadNewFileForm">
-          Upload a new file to the blockchain<br>
-          Check console for txHash and dataHash<br><br>
-          <label for="fileName">File Name</label><br>
-          <input type="text" id="fileName" name="fileName" placeholder="test.html"><br>
-          <label for="fileType">File Type:</label><br>
-          <input type="text" id="fileType" name="fileType" value="text/html"><br><br>
-          <label for="fileDesc">File Description:</label><br>
-          <input type="text" id="fileDesc" name="fileDesc" placeholder="my website, search, terms, here"><br><br>
-          <label id="fileDataLabel" for="fileType">File Data:</label><br>
-          <input type="text" id="fileData" name="fileData" readonly style="background:#D3D3D3;" placeholder="<html>derp</html>"><br><br>
-        </form>
-        <button tyle="button" onclick="uploadNewFile()">Upload Asset</button>
-        <button type="button" onclick="closeUploadDiv()" style="display:inline-block;">Close</button>
-      </div>
-
-      <div id="updateWebsiteDiv" style="display:none;background:white;padding:1rem;">
-        <form id="updateWebsite">
-          For now we will be working with single page assets<br>
-          When you upload a new asset, link array should have a single empty string for the index.html file<br>
-          Hash array should have an array of tx hashes that contain<br><br>
-          <label for="websiteName">Website name</label><br>
-          <input type="text" id="websiteName" name="websiteName" placeholder="test.og"><br>
-          <label for="websiteDesc">Website Description</label><br>
-          <input type="text" id="websiteDesc" name="websiteDesc" placeholder="test site [keywords, here]"><br>
-          <label for="websiteLinks">Link Array (leave empty for index.html)</label><br>
-          <input type="text" id="websiteLinks" name="websiteLinks" value=''><br>
-          <label for="websiteDataHashes">Webpage Data Hash</label><br>
-          <input type="text" id="websiteDataHashes" name="websiteDataHashes" value=''><br>
-          <label for="websiteTxHashes">Webpage Tx Hash</label><br>
-          <input type="text" id="websiteTxHashes" name="websiteTxHashes" value=''><br>
-          <br>
-        </form>
-        <button tyle="button" onclick="updateWebsite()">Update Website</button>
-        <button type="button" onclick="closeUpdateWebsite()" style="display:inline-block;">Close</button>
-      </div>
-
-      <div id="uploadLibraryDiv" style="display:none;background:white;padding:1rem;">
-        <form id="uploadLibrary">
-          Upload a library permanently to the eth blockchain<br>
-          Check the console for the EtherWeb link (derp://0x.../0x...)<br><br>
-          <label for="libraryName">Library name</label><br>
-          <input type="text" id="libraryName" name="libraryName" placeholder="bulma-0.9.4.min.css"><br>
-          <label for="libraryType">MIME Type</label><br>
-          <input type="text" id="libraryType" name="libraryType" placeholder="text/css"><br>
-          <label for="libraryDesc">Library Description</label><br>
-          <input type="text" id="libraryDesc" name="libraryDesc" placeholder="bulma CSS v0.9.4"><br>
-          <label for="libraryLink">Library CDN link</label><br>
-          <input type="text" id="libraryLink" name="libraryLink" placeholder='https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css'><br>
-          <br>
-        </form>
-        <button tyle="button" onclick="uploadLibrary()">Upload Library</button>
-        <button type="button" onclick="closeUploadLibrary()" style="display:inline-block;">Close</button>
-      </div>
-
-      <button id="eth_login_button" onclick="connectWallet()" >Connect</button>
-      <div id="web3Buttons" style="display:none;">
-        <button id="load_page" onclick="loadWebsite()">Load local</button>
-        <button id="update_website" onclick="openUpdateWebsite()">Update Website</button>
-        <button id="upload_library" onclick="openUploadLibrary()">Upload Library</button>
-        <form id="viewWebsite" action="javascript:viewWebsite()" style="display:inline-block;">
-          <input type="text" id="loadWebsiteName" name="websiteName" placeholder="test.og"><br>
-          <input type="submit" value="View Website">
-        </form>
-      </div>
-      <form id="uploadNewFileForm" action="javascript:uploadNewFile()">
-    </div>
-    <iframe id="chain_frame"
-        width="100%"
-        height="95%"
-    </iframe>
-  </body>
 </html>
